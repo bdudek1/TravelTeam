@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "373348611545",
+    "firebase_url": "https://teams-up-250707.firebaseio.com",
+    "project_id": "teams-up-250707",
+    "storage_bucket": "teams-up-250707.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:373348611545:android:832b08b757beeae8",
+        "android_client_info": {
+          "package_name": "com.example.stratelotek"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "373348611545-jd6h9aq02v8b81mif1vksb346epk8mnp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.stratelotek",
+            "certificate_hash": "a897678fcf36997161b7f552b58bac2d8815f0e7"
+          }
+        },
+        {
+          "client_id": "373348611545-8tptchvv61p9s9nhtcptvnl3dui6es57.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrolEEOqPD2vyB6DzLPg-dD6soSR8nTJU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "373348611545-8tptchvv61p9s9nhtcptvnl3dui6es57.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
