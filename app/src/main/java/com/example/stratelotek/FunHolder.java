@@ -1,9 +1,16 @@
 package com.example.stratelotek;
 
+import android.location.Location;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
+import com.example.stratelotek.ui.group.Message;
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FunHolder {
     public static void initInfo(){
@@ -76,11 +83,76 @@ public class FunHolder {
     }
 
     public static PublicGroup getCurrentPublicGroup(){
-        return MainActivity.publicGroupList.getGroups().get(MainActivity.publicGroupList.getNamesOfGroups().indexOf(MainActivity.groupName));
+        return MainActivity.currentPublicGroup;
     }
 
     public static PrivateGroup getCurrentPrivateGroup(){
-        return MainActivity.privateGroupList.getPrivateGroups().get(MainActivity.privateGroupList.getNamesOfGroups().indexOf(MainActivity.groupName));
+        return MainActivity.currentPrivateGroup;
+    }
+
+    public static List<String> getPublicGroupNames(){
+        List<String> names = new ArrayList<>();
+        for(PublicGroup g: MainActivity.publicGroupList){
+            if(g.getName()!= "" && g.getName() != null){
+                if(MainActivity.range == 0){
+                    names.add(g.toStringRepresentation());
+                }else{
+                    if(MainActivity.range > getDistance(MainActivity.user.getLatLng(), new LatLng(g.getLocLat(), g.getLocLon()))){
+                        names.add(g.toStringRepresentation());
+                    };
+                }
+            }
+
+
+        }
+        return names;
+    }
+
+    public static List<String> getPrivateGroupNames(){
+        List<String> names = new ArrayList<>();
+        for(PrivateGroup g: MainActivity.privateGroupList){
+            if(g.getName()!= "" && g.getName() != null){
+                if(MainActivity.range == 0){
+                    names.add(g.toStringRepresentation());
+                }else{
+                    if(MainActivity.range > getDistance(MainActivity.user.getLatLng(), new LatLng(g.getLocLat(), g.getLocLon()))){
+                        names.add(g.toStringRepresentation());
+                    };
+                }
+            }
+
+
+        }
+        return names;
+    }
+    public static List<Message> stringToMessages(List<String> list){
+        List<Message> messageList = new ArrayList<>();
+        for(String s:list){
+            messageList.add(new Message(s));
+        }
+        return messageList;
+    }
+
+    public static int getDistance(LatLng loc1, LatLng loc2){
+        Location l1 = new Location("buf");
+        Location l2 = new Location("buf");
+        l1.setLatitude(loc1.latitude);
+        l1.setLongitude(loc1.longitude);
+        l2.setLatitude(loc2.latitude);
+        l2.setLongitude(loc2.longitude);
+        return (int)l1.distanceTo(l2);
+    }
+
+    public static LatLng updateLoc(List<User> uList){
+        double longtitude = 0.0;
+        double latitude = 0.0;
+        for(User u:uList){
+            longtitude+=u.getLatLng().longitude;
+            latitude+=u.getLatLng().latitude;
+        }
+        longtitude = longtitude/uList.size();
+        latitude = latitude/uList.size();
+        return new LatLng(latitude, longtitude);
     }
 
 }

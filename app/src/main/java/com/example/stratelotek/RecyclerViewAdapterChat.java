@@ -1,6 +1,7 @@
 package com.example.stratelotek;
 
 import android.content.Context;
+import android.text.SpannableString;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,12 +13,12 @@ import java.util.List;
 
 public class RecyclerViewAdapterChat extends RecyclerView.Adapter<RecyclerViewAdapterChat.ViewHolder> {
 
-    private List<String> mData;
+    private List<SpannableString> mData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    RecyclerViewAdapterChat(Context context, List<String> data) {
+    RecyclerViewAdapterChat(Context context, List<SpannableString> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
     }
@@ -32,7 +33,7 @@ public class RecyclerViewAdapterChat extends RecyclerView.Adapter<RecyclerViewAd
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String group = mData.get(holder.getAdapterPosition());
+        SpannableString group = mData.get(holder.getAdapterPosition());
        holder.myTextView.setText(group);
     }
 
@@ -61,7 +62,7 @@ public class RecyclerViewAdapterChat extends RecyclerView.Adapter<RecyclerViewAd
     }
 
     // convenience method for getting data at click position
-    String getItem(int id) {
+    SpannableString getItem(int id) {
         notifyDataSetChanged();
         return mData.get(id);
     }

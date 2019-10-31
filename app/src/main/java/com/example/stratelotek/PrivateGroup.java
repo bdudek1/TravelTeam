@@ -37,14 +37,16 @@ public class PrivateGroup extends PublicGroup {
     public boolean addUser(User user) throws SameNameUserException{
         boolean isAdded = true;
         for(User u:userList){
-            if(u.getName().equals(user.getName()) && !userList.isEmpty()){
+            if(u != null && u.getName()!=null && u.getName().equals(user.getName()) && !userList.isEmpty()){
                 isAdded = false;
                 throw new SameNameUserException("User with same name is present in the group, please change your name.");
             }
         }
         if(isAdded){
+            user.setUserNumber(userList.size());
             userList.add(user);
             usersCounter++;
+            MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("userList").child(Integer.toString(userList.size()-1)).setValue(user);
         }
         return isAdded;
     }
@@ -56,16 +58,16 @@ public class PrivateGroup extends PublicGroup {
             throw new WrongPasswordException("Wrong password.");
         }
         for(User u:userList){
-            if(u.getName().equals(user.getName())){
+            if(u != null && u.getName()!=null && u.getName().equals(user.getName()) && !userList.isEmpty()){
                 isAdded = false;
                 throw new SameNameUserException("User with same name is present in the group, please change your name.");
             }
         }
         if(isAdded){
-            userList.add(user);
             usersCounter++;
-            user.setUserNumber(usersCounter);
-            MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("userList").child(Integer.toString(usersCounter)).setValue(user);
+            user.setUserNumber(userList.size());
+            userList.add(user);
+            //MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("userList").child(Integer.toString(usersCounter)).setValue(user);
         }
         return isAdded;
     }
@@ -102,8 +104,8 @@ public class PrivateGroup extends PublicGroup {
     @Override
     public void addMessage(Message message){
         messages.add(message);
-        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messages").child(Integer.toString(messageCounter)).setValue(message);
         messageCounter++;
-        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messageCounter").setValue(messageCounter);
+        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messageCounter").setValue(Integer.toString(FunHolder.getCurrentPrivateGroup().getMessages().size()));
+        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messages").child(Integer.toString(FunHolder.getCurrentPrivateGroup().getMessages().size())).setValue(message);
     }
 }

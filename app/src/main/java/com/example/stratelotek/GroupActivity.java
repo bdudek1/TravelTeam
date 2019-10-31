@@ -17,6 +17,7 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -40,6 +41,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.Settings;
+import android.text.SpannableString;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -61,9 +63,14 @@ import com.karumi.dexter.listener.single.PermissionListener;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static com.example.stratelotek.MainActivity.database;
+import static com.example.stratelotek.MainActivity.publicGroupList;
 
 public class GroupActivity extends AppCompatActivity implements RecyclerViewAdapter.ItemClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
@@ -81,8 +88,11 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     static RecyclerView listaUzytkownikow;
     static RecyclerViewAdapter adapter;
     static RecyclerViewAdapterChat adapterChat;
-    static List<String> messages;
+    static List<Message> messages;
+    static List<SpannableString> spannableMessages;
     static List<String> users;
+    static List<MarkerAdapter> markerAdapterList;
+    static String groupsReference;
     public static GoogleMap mMap;
     public static OnMapReadyCallback mapCallback;
     public static SupportMapFragment mapFragment;
@@ -100,6 +110,10 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
     private static DatabaseReference messageRef;
     private static DatabaseReference userRef;
+    private static DatabaseReference messageCounterRef;
+
+    static ValueEventListener usersListener;
+    static ValueEventListener messagesListener;
 
     private static final String MAP_VIEW_BUNDLE_KEY = "xxxxxx";
 
@@ -142,12 +156,20 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         context = GroupActivity.this;
         messages = new ArrayList<>();
         users = new ArrayList<>();
+        markerAdapterList = new ArrayList<>();
+        markerAdapterList.clear();
         if(MainActivity.isPublic){
             messageRef = database.getReference("message/public_groups/"+MainActivity.groupName+"/messages");
+            messageCounterRef = database.getReference("message/public_groups/"+MainActivity.groupName+"/messageCounter");
             userRef = database.getReference("message/public_groups/"+MainActivity.groupName+"/userList");
+            messageRef.keepSynced(false);
+            messageCounterRef.keepSynced(false);
+            userRef.keepSynced(false);
+            groupsReference = "public_groups";
         }else{
             messageRef = database.getReference("message/private_groups/"+MainActivity.groupName+"/messages");
             userRef = database.getReference("message/private_groups/"+MainActivity.groupName+"/userList");
+            groupsReference = "private_groups";
         }
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -164,7 +186,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     .build();
 
             mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
             checkLocation();
         }
     }
@@ -222,12 +243,17 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             chat = rootView.findViewById(R.id.recyclerChat);
             listaUzytkownikow.setLayoutManager(new LinearLayoutManager(context));
             chat.setLayoutManager(new LinearLayoutManager(context));
-            adapterChat = new RecyclerViewAdapterChat(context, new ArrayList<String>());
+            adapterChat = new RecyclerViewAdapterChat(context, new ArrayList<SpannableString>());
+            LinkedHashSet<String> hashSet;
             if(MainActivity.isPublic){
-                adapter = new RecyclerViewAdapter(context, FunHolder.getCurrentPublicGroup().getUserNames());
+                hashSet = new LinkedHashSet<>(FunHolder.getCurrentPublicGroup().getUserNames());
             }else{
-                adapter = new RecyclerViewAdapter(context, FunHolder.getCurrentPrivateGroup().getUserNames());
+                hashSet = new LinkedHashSet<>(FunHolder.getCurrentPrivateGroup().getUserNames());
             }
+
+            ArrayList<String> listWithoutDuplicates = new ArrayList<>(hashSet);
+            spannableMessages = new ArrayList<>();
+            adapter = new RecyclerViewAdapter(context, listWithoutDuplicates);
             //adapter = new RecyclerViewAdapter(context, new ArrayList<String>());
             adapter.setClickListener(listenerContext);
             adapterChat.setClickListener(listenerContextChat);
@@ -235,72 +261,152 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(listaUzytkownikow.getContext(),
                     getResources().getConfiguration().orientation);
             listaUzytkownikow.addItemDecoration(dividerItemDecoration);
+            //markerAdapterList.clear();
 
 
             for (int i = 0; i < navigation.getMenu().size(); i++) {
                 navigation.getMenu().getItem(i).setEnabled(false);
             }
 
-            messageRef.addValueEventListener(new ValueEventListener() {
+
+            messagesListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    List<String> post = new ArrayList<>();
                     Iterable<DataSnapshot> dataChildren = dataSnapshot.getChildren();
                     users.clear();
+                    messages.clear();
+                    spannableMessages.clear();
+                    if(MainActivity.isPublic){
+                        FunHolder.getCurrentPublicGroup().getMessages().clear();
+                    }else{
+                        FunHolder.getCurrentPrivateGroup().getMessages().clear();
+                    }
+
                     for(DataSnapshot d:dataChildren){
-                        post.add(d.getValue(Message.class).toString());
-                        users.add(d.getValue(Message.class).toString());
+                        if(MainActivity.isPublic){
+                            FunHolder.getCurrentPublicGroup().getMessages().add(d.getValue(Message.class));
+                        }else{
+                            FunHolder.getCurrentPrivateGroup().getMessages().add(d.getValue(Message.class));
+                        }
+
+                        messages.add(d.getValue(Message.class));
+                        FunHolder.getCurrentPublicGroup().messageCounter = messages.size();
+                        spannableMessages.add(d.getValue(Message.class).toSpannableString());
                     }
-                    System.out.println(post);
-                    Toast.makeText(context, "Post: " + post, Toast.LENGTH_SHORT).show();
-                    if(post!=null){
-                        //messages = post;
-                        adapterChat = new RecyclerViewAdapterChat(context, users);
-                        adapterChat.setClickListener(listenerContextChat);
-                        adapterChat.notifyDataSetChanged();
-                        chat.setAdapter(adapterChat);
-                        chat.invalidate();
+                    if(MainActivity.isPublic){
+                        if(FunHolder.getCurrentPublicGroup().getMessages()!=null){
+                            adapterChat = new RecyclerViewAdapterChat(context, spannableMessages);
+                            adapterChat.setClickListener(listenerContextChat);
+                            adapterChat.notifyDataSetChanged();
+                            chat.setAdapter(adapterChat);
+                            chat.invalidate();
+                        }
+                    }else{
+                        if(FunHolder.getCurrentPrivateGroup().getMessages()!=null){
+                            adapterChat = new RecyclerViewAdapterChat(context, spannableMessages);
+                            adapterChat.setClickListener(listenerContextChat);
+                            adapterChat.notifyDataSetChanged();
+                            chat.setAdapter(adapterChat);
+                            chat.invalidate();
+                        }
                     }
+
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
                     System.out.println("The read failed: " + databaseError.getCode());
                 }
-            });
+            };
+            messageRef.addValueEventListener(messagesListener);
 
-            userRef.addValueEventListener(new ValueEventListener() {
+            usersListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Iterable<DataSnapshot> dataChildren = dataSnapshot.getChildren();
                     List<String> post = new ArrayList<>();
-                    //users.clear();
-                    for(DataSnapshot d:dataChildren){
-                        post.add(d.getValue(User.class).toString());
-                        //users.add(d.getValue(User.class).toString());
+                    post.clear();
+                    if(MainActivity.isPublic){
+                        FunHolder.getCurrentPublicGroup().getUserList().clear();
+                    }else{
+                        FunHolder.getCurrentPrivateGroup().getUserList().clear();
                     }
-                    System.out.println(post);
 
- //                   if(post!=null){
-//                        if(MainActivity.isPublic){
-//                            adapter = new RecyclerViewAdapter(context, post);
-//                        }else{
-//                            adapter = new RecyclerViewAdapter(context, post);
+                    for(DataSnapshot d:dataChildren){
+                        if(MainActivity.isPublic){
+                            FunHolder.getCurrentPublicGroup().getUserList().add(d.getValue(User.class));
+                        }else{
+                            FunHolder.getCurrentPrivateGroup().getUserList().add(d.getValue(User.class));
+                        }
+                    }
+
+
+                    if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>0){
+                        if(FunHolder.getCurrentPublicGroup().locLat == 0.0 || FunHolder.getCurrentPublicGroup().locLon == 0.0){
+                            FunHolder.getCurrentPublicGroup().setLatLng(new LatLng(FunHolder.getCurrentPublicGroup().getUserList().get(0).locLat, FunHolder.getCurrentPublicGroup().getUserList().get(0).locLon));
+                        }
+                        //FunHolder.getCurrentPublicGroup().getMessages().clear();
+//                        messageRef.removeEventListener(messagesListener);
+//                        for(Message m:messages){
+//                            FunHolder.getCurrentPublicGroup().addMessage(m);
 //                        }
-//                        adapter = MainActivity.isPublic ? new RecyclerViewAdapter(context, FunHolder.getCurrentPublicGroup().getUserNames()) : new RecyclerViewAdapter(context, FunHolder.getCurrentPrivateGroup().getUserNames());
-                        adapter = new RecyclerViewAdapter(context, post);
+//                        messageRef.addValueEventListener(messagesListener);
+                        //messageRef.removeEventListener(messagesListener);
+                        //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("messages").setValue(FunHolder.getCurrentPublicGroup().getMessages());
+                        //messageRef.addValueEventListener(messagesListener);
+                        //MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).setValue(FunHolder.getCurrentPublicGroup());
+                        //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(FunHolder.getCurrentPublicGroup().getUserList());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("locLat").setValue(FunHolder.getCurrentPublicGroup().getLocLat());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("locLon").setValue(FunHolder.getCurrentPublicGroup().getLocLon());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("name").setValue(FunHolder.getCurrentPublicGroup().getName());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("groupId").setValue(FunHolder.getCurrentPublicGroup().getGroupId());
+                        //Toast.makeText(getContext(), "Msgs: " + FunHolder.getCurrentPublicGroup().getMessages(), Toast.LENGTH_SHORT).show();
+                        //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("messages").setValue(FunHolder.getCurrentPublicGroup().getMessages());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("range").setValue(FunHolder.getCurrentPublicGroup().range);
+                        //FunHolder.getCurrentPublicGroup().addMessages(messages);
+                        if(!MainActivity.publicGroupList.contains(FunHolder.getCurrentPublicGroup())){
+                            MainActivity.publicGroupList.add(FunHolder.getCurrentPublicGroup());
+                        }
+                    }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>0){
+                        if(FunHolder.getCurrentPrivateGroup().locLat == 0){
+                            FunHolder.getCurrentPrivateGroup().setLatLng(FunHolder.getCurrentPrivateGroup().getUserList().get(0).getLatLng());
+                        }
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("locLat").setValue(FunHolder.getCurrentPrivateGroup().getLocLat());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("locLon").setValue(FunHolder.getCurrentPrivateGroup().getLocLon());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("name").setValue(FunHolder.getCurrentPrivateGroup().getName());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("groupId").setValue(FunHolder.getCurrentPrivateGroup().getGroupId());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("messages").setValue(FunHolder.getCurrentPrivateGroup().getMessages());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("range").setValue(FunHolder.getCurrentPrivateGroup().range);
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("password").setValue(FunHolder.getCurrentPrivateGroup().getPassword());
+                        if(!MainActivity.privateGroupList.contains(FunHolder.getCurrentPrivateGroup())){
+                            MainActivity.privateGroupList.add(FunHolder.getCurrentPrivateGroup());
+                        }
+                    }
+
+
+                    try{
+                        LinkedHashSet<String> hashSet = new LinkedHashSet<>(FunHolder.getCurrentPublicGroup().getUserNames());
+
+                        ArrayList<String> listWithoutDuplicates = new ArrayList<>(hashSet);
+
+                        adapter = new RecyclerViewAdapter(context, listWithoutDuplicates);
                         adapter.setClickListener(listenerContext);
                         adapter.notifyDataSetChanged();
                         listaUzytkownikow.setAdapter(adapter);
                         listaUzytkownikow.invalidate();
-//                    }
+
+                    }catch(NullPointerException e){
+                        e.getMessage();
+                    }
+                    updateMarkers();
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
                     System.out.println("The read failed: " + databaseError.getCode());
                 }
-            });
+            };
+            userRef.addValueEventListener(usersListener);
 
 
 
@@ -313,6 +419,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     }else{
                         if(MainActivity.isPublic){
                             FunHolder.getCurrentPublicGroup().addMessage(new Message(MainActivity.user , messageEtext.getText().toString()));
+                            Toast.makeText(context, "messageCounter: " + FunHolder.getCurrentPublicGroup().messageCounter, Toast.LENGTH_SHORT).show();
                         }else{
                             FunHolder.getCurrentPrivateGroup().addMessage(new Message(MainActivity.user , messageEtext.getText().toString()));
                         }
@@ -326,8 +433,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     FunHolder.initUsersList();
                     navigation.setSelectedItemId(R.id.users_list);
                     tytul.setText("Users list");
-                    //adapter = MainActivity.isPublic ? new RecyclerViewAdapter(context, FunHolder.getCurrentPublicGroup().getUserNames()) : new RecyclerViewAdapter(context, FunHolder.getCurrentPrivateGroup().getUserNames());
-                    //adapter = new RecyclerViewAdapter(context, users);
                     adapter.setClickListener(listenerContext);
                     adapter.notifyDataSetChanged();
                     listaUzytkownikow.setLayoutManager(new LinearLayoutManager(context));
@@ -343,7 +448,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                 }
                 case 3: {
                     FunHolder.initChat();
-                    adapterChat = new RecyclerViewAdapterChat(context, messages);
+                    adapterChat = new RecyclerViewAdapterChat(context, spannableMessages);
                     adapterChat.setClickListener(listenerContextChat);
                     adapterChat.notifyDataSetChanged();
                     chat.setLayoutManager(new LinearLayoutManager(context));
@@ -366,25 +471,78 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     }
     @Override
     public void onBackPressed() {
-        if(MainActivity.isPublic){
-            try{
-                FunHolder.getCurrentPublicGroup().getUserList().removeIf(x -> x.getName().equals(MainActivity.user.getName()));
-            }catch(ArrayIndexOutOfBoundsException e){
-                e.getMessage();
-            }
-            if(MainActivity.publicGroupList.tryToDestroyGroup())
-                PublicGroup.publicGroupCounter--;
-        }else{
-            try{
-                FunHolder.getCurrentPrivateGroup().getUserList().removeIf(x -> x.getName().equals(MainActivity.user.getName()));
-            }catch(ArrayIndexOutOfBoundsException e){
-                e.getMessage();
-            }
-            if(MainActivity.privateGroupList.tryToDestroyGroup())
-                PrivateGroup.privateGroupCounter--;
-        }
-        MainActivity.currentUserName = MainActivity.user.getName();
-        MainActivity.userName.setText(MainActivity.currentUserName);
+        List<Message> msgs = new ArrayList<>();
+        //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("messages").setValue(FunHolder.getCurrentPublicGroup().getMessages());
+//        userRef.removeEventListener(usersListener);
+//        messageRef.removeEventListener(messagesListener);
+//        if(MainActivity.isPublic){
+//            msgs.addAll(FunHolder.getCurrentPublicGroup().getMessages());
+//            try{
+//                while(FunHolder.getCurrentPublicGroup().getUserList().contains(MainActivity.user))
+//                FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
+//                MainActivity.user.resetMarker();
+//
+//                markerAdapterList.removeIf(x ->x == null);
+//                markerAdapterList.removeIf(x ->x.userName == null);
+//                markerAdapterList.removeIf(x ->x.userName.equals(MainActivity.user.getName()));
+//
+//
+//            }catch(ArrayIndexOutOfBoundsException e){
+//                e.getMessage();
+//            }
+//            if(FunHolder.getCurrentPublicGroup().tryToDestroy())
+//                PublicGroup.publicGroupCounter--;
+//        }else{
+//            msgs.addAll(FunHolder.getCurrentPrivateGroup().getMessages());
+//            try{
+//                while(FunHolder.getCurrentPrivateGroup().getUserList().contains(MainActivity.user))
+//                    FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
+//
+//                markerAdapterList.removeIf(x ->x.userName.equals(MainActivity.user.getName()));
+//            }catch(ArrayIndexOutOfBoundsException e){
+//                e.getMessage();
+//            }
+//            if(FunHolder.getCurrentPrivateGroup().tryToDestroy())
+//                PrivateGroup.privateGroupCounter--;
+//        }
+//        MainActivity.currentUserName = MainActivity.user.getName();
+//        MainActivity.userName.setText(MainActivity.currentUserName);
+//        if(MainActivity.isPublic){
+//            while(FunHolder.getCurrentPublicGroup().getUserList().contains(MainActivity.user))
+//                FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
+//
+//            if(FunHolder.getCurrentPublicGroup().getUserList().size() > 0){
+//                MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("messages").setValue(FunHolder.getCurrentPublicGroup().getMessages());
+//                //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).setValue(FunHolder.getCurrentPublicGroup());
+//            }
+//        }else{
+//            while(FunHolder.getCurrentPrivateGroup().getUserList().contains(MainActivity.user))
+//                FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
+//
+//            if(FunHolder.getCurrentPrivateGroup().getUserList().size() > 0){
+//                MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("messages").setValue(FunHolder.getCurrentPrivateGroup().getMessages());
+//                //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).setValue(FunHolder.getCurrentPrivateGroup());
+//            }
+//        }
+//        FunHolder.getCurrentPublicGroup().getMessages().clear();
+//        for(Message m:msgs){
+//            FunHolder.getCurrentPublicGroup().addMessage(m);
+//        }
+//        Toast.makeText(this, "Msgs: " + msgs, Toast.LENGTH_SHORT).show();
+//        //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("messages").setValue(msgs);
+//        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).setValue(FunHolder.getCurrentPublicGroup());
+//        for(Message m:messages){
+//            FunHolder.getCurrentPublicGroup().addMessage(m);
+//        }
+//        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).setValue(FunHolder.getCurrentPublicGroup());
+//        userRef.removeEventListener(usersListener);
+//        messageRef.removeEventListener(messagesListener);
+//        for(Message m:msgs){
+//            FunHolder.getCurrentPublicGroup().addMessage(m);
+//        }
+        Toast.makeText(this, "Msgs: " + messages, Toast.LENGTH_SHORT).show();
+        FunHolder.getCurrentPublicGroup().addMessages(messages);
+        //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("messages").setValue(FunHolder.getCurrentPublicGroup().getMessages());;
         startActivity(new Intent(this, MainActivity.class));
         finish();
     }
@@ -400,30 +558,10 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     public void onMapReady(GoogleMap map) {
         mMap = map;
 
-        if (latLng != null) {
-            mMap.clear();
+        if (latLng != null && latLng.longitude != 0.0 && latLng.latitude != 0.0) {
             MainActivity.user.setLocation(latLng);
-            if(MainActivity.isPublic){
-                try{
-                    for(User u:FunHolder.getCurrentPublicGroup().getUserList()){
-                        if(u.getLatLng()!=null)
-                            mMap.addMarker(new MarkerOptions().position(u.getLatLng()).title(u.getName()));
-                    }
-                }catch(ArrayIndexOutOfBoundsException e){
-                    e.getMessage();
-                }
+            mapFragment.getMapAsync(mapCallback);
 
-            }else{
-                try{
-                    for(User u:FunHolder.getCurrentPrivateGroup().getUserList()){
-                        if(u.getLatLng()!=null)
-                            mMap.addMarker(new MarkerOptions().position(u.getLatLng()).title(u.getName()));
-                    }
-                }catch(ArrayIndexOutOfBoundsException e){
-                    e.getMessage();
-                }
-
-            }
             try{
                 moveToCurrentLocation(MainActivity.user.getLatLng());
             }catch(NullPointerException e){
@@ -448,7 +586,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             startLocationUpdates();
         }
         if (mLocation != null) {
-
+            startLocationUpdates();
         } else {
             Toast.makeText(this, "Location not Detected", Toast.LENGTH_SHORT).show();
         }
@@ -467,31 +605,46 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
     @Override
     public void onLocationChanged(Location location)  {
-        // You can now create a LatLng Object for use with maps
         latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        MainActivity.user.setLocation(latLng);
-        if(MainActivity.isPublic){
-            MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("userList").child(Integer.toString(MainActivity.user.getUserNumber())).setValue(MainActivity.user);
-        }else{
-            MainActivity.myRef.child("prvate_groups").child(MainActivity.groupName).child("userList").child(Integer.toString(MainActivity.user.getUserNumber())).setValue(MainActivity.user);
-        }
-        String msg;
+        if(latLng != null && latLng.latitude != 0.0 && latLng.longitude != 0.0){
+           // Toast.makeText(getApplicationContext(), latLng.toString(), Toast.LENGTH_SHORT).show();
+            MainActivity.user.setLocation(latLng);
+            //MainActivity.myRef.child(groupsReference).child(MainActivity.groupName).child("userList").child(Integer.toString(MainActivity.user.getUserNumber())).setValue(MainActivity.user);
+            if(MainActivity.isPublic){
+                for(User u:FunHolder.getCurrentPublicGroup().getUserList()){
+//                    if(MainActivity.userName.equals(u.getName())){
+//                        u.setLocation(latLng);
+//                    MainActivity.myRef.child(groupsReference).child(MainActivity.groupName).child("userList").child(Integer.toString(u.getUserNumber())).setValue(u);
+//                    }
 
-        try{
-            msg = "User location: " +
-                    MainActivity.user.getLatLng().toString();
-        }catch(NullPointerException e){
-            msg = "User location is null";
-        }
+//                    if(u.getMarker() != null){
+//                        Toast.makeText(getApplicationContext(), u.getMarker().getPosition().toString(), Toast.LENGTH_SHORT).show();
+//                    }else{
+//                        Toast.makeText(getApplicationContext(), "Marker is null", Toast.LENGTH_SHORT).show();
+//                    }
 
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-        if(MainActivity.isPublic){
-            MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("userList").child(Integer.toString(MainActivity.user.getUserNumber())).child("location").setValue(MainActivity.user.getLatLng());
-        }else{
-            MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("userList").child(Integer.toString(MainActivity.user.getUserNumber())).child("location").setValue(MainActivity.user.getLatLng());
-        }
+                }
+            }else{
+                for(User u:FunHolder.getCurrentPrivateGroup().getUserList()){
+                    if(MainActivity.userName.equals(u.getName()))
+                        u.setLocation(latLng);
+                }
 
-        mapFragment.getMapAsync(mapCallback);
+
+                //MainActivity.myRef.child(groupsReference).child(MainActivity.groupName).child("userList").child(Integer.toString(MainActivity.user.getUserNumber())).setValue(MainActivity.user);
+
+            }
+
+
+//        if(MainActivity.isPublic){
+//            MainActivity.myRef.child(groupsReference).child(MainActivity.groupName).child("userList").child(Integer.toString(MainActivity.user.getUserNumber())).child("latLng").setValue(MainActivity.user.getLatLng());
+//            MainActivity.myRef.child(groupsReference).child(MainActivity.groupName).child("userList").child(Integer.toString(MainActivity.user.getUserNumber())).child("name").setValue(MainActivity.user.getName());
+//        }else{
+//            MainActivity.myRef.child(groupsReference).child(MainActivity.groupName).child("userList").child(Integer.toString(MainActivity.user.getUserNumber())).child("latLng").setValue(MainActivity.user.getLatLng());
+//            MainActivity.myRef.child(groupsReference).child(MainActivity.groupName).child("userList").child(Integer.toString(MainActivity.user.getUserNumber())).child("name").setValue(MainActivity.user.getName());
+//        }
+
+        }
 
     }
 
@@ -524,12 +677,20 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
+        if(usersListener!=null && userRef!=null)
+        userRef.removeEventListener(usersListener);
+        if(messageRef!=null && messagesListener!=null)
+        messageRef.removeEventListener(messagesListener);
         mapFragment.onStop();
     }
 
     @Override
     protected void onResume(){
         super.onResume();
+        if(usersListener!=null && userRef!=null)
+        userRef.addValueEventListener(usersListener);
+        if(messageRef!=null && messagesListener!=null)
+        messageRef.addValueEventListener(messagesListener);
         //mapFragment.onResume();
     }
 
@@ -599,7 +760,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
     }
 
-    private void moveToCurrentLocation(LatLng currentLocation)
+    public static void moveToCurrentLocation(LatLng currentLocation)
     {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,15));
         // Zoom in, animating the camera.
@@ -608,5 +769,60 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
 
 
+    }
+    private static void updateMarkers(){
+        if(mMap!=null){
+            //mMap.clear();
+//            for(MarkerAdapter m:markerAdapterList){
+//                if(m.getMarker()!=null)
+//                m.getMarker().remove();
+//            }
+//            markerAdapterList.clear();
+
+
+            markerAdapterList.removeIf(x -> x == null);
+            markerAdapterList.removeIf(x -> x.userName == null);
+
+
+            if(MainActivity.isPublic){
+                for(User u:FunHolder.getCurrentPublicGroup().getUserList()){
+                    //MarkerAdapter m = new MarkerAdapter(u, mMap);
+                    if(markerAdapterList.contains(new MarkerAdapter(u, mMap))){
+                        markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(u, mMap))).setPosition(u, mMap);
+                       // mMap.addMarker(markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(u, mMap))).getMarkerOptions(u));
+                       // Toast.makeText(context, markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(u, mMap))).toString(), Toast.LENGTH_SHORT).show();
+                    }else{
+                        markerAdapterList.add(new MarkerAdapter(u, mMap));
+                        //markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(u, mMap))).setPosition(u, mMap);
+                    }
+
+//                    boolean contains= false;
+//                    for(MarkerAdapter m:markerAdapterList){
+//                        if(m.getUserName().equals(u.getName())){
+//                            m.setPosition(u, mMap);
+//                            contains = true;
+//                        }
+//                    }
+//                    if(contains == false){
+//                        markerAdapterList.add(new MarkerAdapter(u, mMap));
+//                    }
+                }
+               // Toast.makeText(context, "Marker list size: " + markerAdapterList.size() + ", user list size : " + FunHolder.getCurrentPublicGroup().getUserList().size(), Toast.LENGTH_SHORT).show();
+
+            }else{
+                    //markerAdapterList.clear();
+                for(MarkerAdapter m:markerAdapterList){
+
+                }
+                for(User u:FunHolder.getCurrentPrivateGroup().getUserList()){
+                    if(markerAdapterList.contains(new MarkerAdapter(u, mMap))){
+                        markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(u, mMap))).setPosition(u, mMap);
+                    }else{
+                        markerAdapterList.add(new MarkerAdapter(u, mMap));
+                    }
+                }
+
+            }
+        }
     }
 }

@@ -1,19 +1,27 @@
 package com.example.stratelotek;
 
+import android.location.Location;
+
 import com.example.stratelotek.ui.group.Message;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.ArrayList;
+import java.util.List;
+
 @IgnoreExtraProperties
 public class PublicGroup {
     public static int publicGroupCounter;
-    private int usersCounter;
     private String name;
     private String groupId;
-    protected int messageCounter;
+    public double locLat;
+    public double locLon;
+    public int range;
+    public int messageCounter;
     protected ArrayList<User> userList = new ArrayList<>();
     protected ArrayList<Message> messages = new ArrayList<>();
+
 
     public PublicGroup(String name) throws BlankNameException{
         if(name.equals("")){
@@ -37,34 +45,43 @@ public class PublicGroup {
 
     public boolean addUser(User user) throws SameNameUserException{
         boolean isAdded = true;
-//        for(User u:userList){
-//            if(u.getName().equals(user.getName()) && !userList.isEmpty()){
-//                isAdded = false;
-//                throw new SameNameUserException("User with same name is present in the group, please change your name.");
-//            }
-//        }
-        if(isAdded){
-            userList.add(user);
-            usersCounter++;
-            user.setUserNumber(usersCounter);
-            MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("userList").child(Integer.toString(usersCounter)).setValue(user);
+        if(user != null){
+            for(User u:userList){
+                if(u != null && u.getName()!=null && u.getName().equals(user.getName()) && !userList.isEmpty()){
+                    isAdded = false;
+                    throw new SameNameUserException("User with same name is present in the group, please change your name.");
+                }
+            }
+            if(isAdded){
+                user.setUserNumber(userList.size());
+                userList.add(user);
+                MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("userList").child(Integer.toString(userList.size()-1)).setValue(user);
+            }
+        }else{
+            isAdded = false;
         }
+
         return isAdded;
     }
 
     public void removeUser(User user){
         userList.removeIf(u -> u.getName().equals(user.getName()));
-        usersCounter--;
+
+        for(User u:userList){
+            if(u.getName().equals(user.getName()));
+            userList.remove(u);
+        }
+        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("userList").setValue(userList);
     }
 
-//    public boolean tryToDestroy(){
-//        if(usersCounter < 1){
-//            destroyGroup();
-//            return true;
-//        }else{
-//            return false;
-//        }
-//    }
+    public boolean tryToDestroy(){
+        if(userList.size() <  1){
+            destroyGroup();
+            return true;
+        }else{
+            return false;
+        }
+    }
     public String getName(){
         return name;
     }
@@ -77,10 +94,11 @@ public class PublicGroup {
     public ArrayList<User> getUserList(){
         return userList;
     }
-
+//
     public ArrayList<String> getUserNames(){
         ArrayList<String> list = new ArrayList<String>();
         for(User u : userList){
+            if(u!=null && u.getName() != null)
             list.add(u.getName());
         }
         return list;
@@ -100,17 +118,82 @@ public class PublicGroup {
 
     public void addMessage(Message message){
         //messages.add(message);
-        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").child(Integer.toString(messageCounter)).setValue(message);
-        messageCounter++;
+        //messageCounter++;
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(messageCounter);
+        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").child(Integer.toString(messageCounter)).setValue(message);
     }
 
-    public int getMessageCounter(){
-        return messageCounter-1;
+    public  void addMessages(List<Message> messages){
+        for(Message m:messages){
+            MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(messageCounter);
+            MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").child(Integer.toString(messageCounter)).setValue(m);
+        }
     }
+
+
+//    public void updateLocation() {
+//        int i = 0;
+//        this.locLat = 0.0;
+//        this.locLon = 0.0;
+//        for(User u:userList){
+//            if(u.getLatLng().longitude != 0.0 && u.getLatLng().latitude != 0.0){
+//                this.locLat += u.getLatLng().latitude;
+//                this.locLon += u.getLatLng().longitude;
+//                i++;
+//            }
+//        }
+//        if(i>0){
+//            this.locLat = locLat/i;
+//            this.locLon = locLat/i;
+//        }else{
+//            this.locLat = 0.0;
+//            this.locLon = 0.0;
+//        }
+//
+//
+//    }
+
+//    public LatLng getLatLng(){
+//        try{
+//            return new LatLng(locLat, locLon);
+//        }catch (Exception e){
+//            return new LatLng(1.1, 1.1);
+//        }
+//    }
+
+
+    public void setLatLng(LatLng loc){
+        this.locLat = loc.latitude;
+        this.locLon = loc.longitude;
+    }
+
 
     @Override
     public String toString(){
         return getGroupId() + " " + getName();
+    }
+
+    public String toStringRepresentation(){
+        return getName() + ", R:" + range + "km, D: " + FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(locLat, locLon))/1000 +"km";
+    }
+
+    public ArrayList<Message> getMessages(){
+        return messages;
+    }
+
+    public ArrayList<String> getMessagesText(){
+        ArrayList<String> list = new ArrayList<>();
+        for(Message s: messages){
+            list.add(s.toString());
+        }
+        return list;
+    }
+
+    public double getLocLat(){
+        return locLat;
+    }
+
+    public double getLocLon(){
+        return locLon;
     }
 }
