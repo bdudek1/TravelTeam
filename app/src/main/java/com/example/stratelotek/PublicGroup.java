@@ -22,6 +22,9 @@ public class PublicGroup {
     protected ArrayList<User> userList = new ArrayList<>();
     protected ArrayList<Message> messages = new ArrayList<>();
 
+    @Exclude
+    protected List<Message> messagesBuf = new ArrayList<>();
+
 
     public PublicGroup(String name) throws BlankNameException{
         if(name.equals("")){

@@ -127,6 +127,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
         myRef.setValue("Groups database");
 
+
         ValueEventListener postListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

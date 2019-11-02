@@ -89,6 +89,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     static RecyclerViewAdapter adapter;
     static RecyclerViewAdapterChat adapterChat;
     static List<Message> messages;
+    //static List<Message> messagesBuf;
     static List<SpannableString> spannableMessages;
     static List<String> users;
     static List<MarkerAdapter> markerAdapterList;
@@ -290,9 +291,14 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         }
 
                         messages.add(d.getValue(Message.class));
-                        FunHolder.getCurrentPublicGroup().messageCounter = messages.size();
+                        //FunHolder.getCurrentPublicGroup().messageCounter = messages.size();
                         spannableMessages.add(d.getValue(Message.class).toSpannableString());
                     }
+                    FunHolder.getCurrentPublicGroup().messageCounter = messages.size();
+                    if(messages.size()>0)
+                        FunHolder.getCurrentPublicGroup().messagesBuf = messages;
+
+                    Toast.makeText(context, "Msgs buf: " + FunHolder.getCurrentPublicGroup().messagesBuf, Toast.LENGTH_SHORT).show();
                     if(MainActivity.isPublic){
                         if(FunHolder.getCurrentPublicGroup().getMessages()!=null){
                             adapterChat = new RecyclerViewAdapterChat(context, spannableMessages);
@@ -363,6 +369,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         //Toast.makeText(getContext(), "Msgs: " + FunHolder.getCurrentPublicGroup().getMessages(), Toast.LENGTH_SHORT).show();
                         //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("messages").setValue(FunHolder.getCurrentPublicGroup().getMessages());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("range").setValue(FunHolder.getCurrentPublicGroup().range);
+                        //FunHolder.getCurrentPublicGroup().addMessages(messages);
                         //FunHolder.getCurrentPublicGroup().addMessages(messages);
                         if(!MainActivity.publicGroupList.contains(FunHolder.getCurrentPublicGroup())){
                             MainActivity.publicGroupList.add(FunHolder.getCurrentPublicGroup());
@@ -472,6 +479,9 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     @Override
     public void onBackPressed() {
         List<Message> msgs = new ArrayList<>();
+//        FunHolder.getCurrentPublicGroup().addMessages(messages);
+//        FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
+//        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).setValue(FunHolder.getCurrentPublicGroup());
         //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("messages").setValue(FunHolder.getCurrentPublicGroup().getMessages());
 //        userRef.removeEventListener(usersListener);
 //        messageRef.removeEventListener(messagesListener);
@@ -535,16 +545,20 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 //            FunHolder.getCurrentPublicGroup().addMessage(m);
 //        }
 //        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).setValue(FunHolder.getCurrentPublicGroup());
-//        userRef.removeEventListener(usersListener);
-//        messageRef.removeEventListener(messagesListener);
 //        for(Message m:msgs){
 //            FunHolder.getCurrentPublicGroup().addMessage(m);
 //        }
         Toast.makeText(this, "Msgs: " + messages, Toast.LENGTH_SHORT).show();
         FunHolder.getCurrentPublicGroup().addMessages(messages);
         //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("messages").setValue(FunHolder.getCurrentPublicGroup().getMessages());;
-        startActivity(new Intent(this, MainActivity.class));
         finish();
+        startActivity(new Intent(this, MainActivity.class));
+//        try{
+//            onDestroy();
+//        }catch(Exception e){
+//            e.getMessage();
+//        }
+
     }
 
 
@@ -552,6 +566,18 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
+    }
+
+    @Override
+    public void onRestart(){
+        if (!mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.connect();
+        }
+        if(usersListener!=null && userRef!=null)
+            userRef.addValueEventListener(usersListener);
+        if(messageRef!=null && messagesListener!=null)
+            messageRef.addValueEventListener(messagesListener);
+        super.onRestart();
     }
 
     @Override
@@ -681,7 +707,13 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         userRef.removeEventListener(usersListener);
         if(messageRef!=null && messagesListener!=null)
         messageRef.removeEventListener(messagesListener);
+
         mapFragment.onStop();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
     }
 
     @Override
@@ -691,7 +723,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         userRef.addValueEventListener(usersListener);
         if(messageRef!=null && messagesListener!=null)
         messageRef.addValueEventListener(messagesListener);
-        //mapFragment.onResume();
+        if(mapFragment!=null)
+        mapFragment.onResume();
     }
 
     private boolean checkLocation() {
@@ -769,6 +802,17 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
 
 
+    }
+
+    @Override
+    public void onDestroy(){
+        FunHolder.getCurrentPublicGroup().addMessages(FunHolder.getCurrentPublicGroup().messagesBuf);
+        FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
+        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).setValue(FunHolder.getCurrentPublicGroup());
+        Toast.makeText(context, "onDestroy msgs: " + FunHolder.getCurrentPublicGroup().messagesBuf, Toast.LENGTH_SHORT).show();
+        userRef.removeEventListener(usersListener);
+        messageRef.removeEventListener(messagesListener);
+        super.onDestroy();
     }
     private static void updateMarkers(){
         if(mMap!=null){
