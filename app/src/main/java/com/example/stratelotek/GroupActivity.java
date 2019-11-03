@@ -70,7 +70,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import static com.example.stratelotek.MainActivity.database;
-import static com.example.stratelotek.MainActivity.publicGroupList;
+
 
 public class GroupActivity extends AppCompatActivity implements RecyclerViewAdapter.ItemClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
@@ -89,7 +89,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     static RecyclerViewAdapter adapter;
     static RecyclerViewAdapterChat adapterChat;
     static List<Message> messages;
-    //static List<Message> messagesBuf;
     static List<SpannableString> spannableMessages;
     static List<String> users;
     static List<MarkerAdapter> markerAdapterList;
@@ -97,6 +96,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     public static GoogleMap mMap;
     public static OnMapReadyCallback mapCallback;
     public static SupportMapFragment mapFragment;
+
+    public final static List<Message> msgsBuf = new ArrayList<>();
 
     public static GoogleApiClient mGoogleApiClient;
     private static Location mLocation;
@@ -112,6 +113,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     private static DatabaseReference messageRef;
     private static DatabaseReference userRef;
     private static DatabaseReference messageCounterRef;
+    private static DatabaseReference groupRef;
 
     static ValueEventListener usersListener;
     static ValueEventListener messagesListener;
@@ -172,6 +174,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             userRef = database.getReference("message/private_groups/"+MainActivity.groupName+"/userList");
             groupsReference = "private_groups";
         }
+        groupRef = database.getReference("message/" + groupsReference +"/"+MainActivity.groupName);
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
@@ -298,7 +301,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     if(messages.size()>0)
                         FunHolder.getCurrentPublicGroup().messagesBuf = messages;
 
-                    Toast.makeText(context, "Msgs buf: " + FunHolder.getCurrentPublicGroup().messagesBuf, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(context, "Msgs buf: " + FunHolder.getCurrentPublicGroup().messagesBuf, Toast.LENGTH_SHORT).show();
                     if(MainActivity.isPublic){
                         if(FunHolder.getCurrentPublicGroup().getMessages()!=null){
                             adapterChat = new RecyclerViewAdapterChat(context, spannableMessages);
@@ -548,16 +551,16 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 //        for(Message m:msgs){
 //            FunHolder.getCurrentPublicGroup().addMessage(m);
 //        }
-        Toast.makeText(this, "Msgs: " + messages, Toast.LENGTH_SHORT).show();
-        FunHolder.getCurrentPublicGroup().addMessages(messages);
+
+        //FunHolder.getCurrentPublicGroup().addMessages(FunHolder.getCurrentPublicGroup().messagesBuf);
+        //FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
+        //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).setValue(FunHolder.getCurrentPublicGroup());
+        Toast.makeText(context, "onBack msgs: " + FunHolder.getCurrentPublicGroup().messagesBuf, Toast.LENGTH_SHORT).show();
+        msgsBuf.addAll(FunHolder.getCurrentPublicGroup().messagesBuf);
+        //FunHolder.getCurrentPublicGroup().addMessages(messages);
         //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("messages").setValue(FunHolder.getCurrentPublicGroup().getMessages());;
         finish();
         startActivity(new Intent(this, MainActivity.class));
-//        try{
-//            onDestroy();
-//        }catch(Exception e){
-//            e.getMessage();
-//        }
 
     }
 
@@ -703,6 +706,9 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
+        Toast.makeText(context, "onStop msgs: " + FunHolder.getCurrentPublicGroup().messagesBuf, Toast.LENGTH_SHORT).show();
+        FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
+        FunHolder.getCurrentPublicGroup().addMessages(msgsBuf);
         if(usersListener!=null && userRef!=null)
         userRef.removeEventListener(usersListener);
         if(messageRef!=null && messagesListener!=null)
@@ -713,6 +719,15 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
     @Override
     public void onPause(){
+        Toast.makeText(context, "onPause msgs: " + FunHolder.getCurrentPublicGroup().messagesBuf, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(context, "onPause msgs: " + FunHolder.getCurrentPublicGroup().messagesBuf, Toast.LENGTH_SHORT).show();
+        //FunHolder.getCurrentPublicGroup().getMessages().clear();
+        //FunHolder.getCurrentPublicGroup().addMessages(FunHolder.getCurrentPublicGroup().messagesBuf);
+        //FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
+        //FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
+        //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).setValue(FunHolder.getCurrentPublicGroup());
+        //userRef.removeEventListener(usersListener);
+        //messageRef.removeEventListener(messagesListener);
         super.onPause();
     }
 
@@ -807,11 +822,11 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     @Override
     public void onDestroy(){
         FunHolder.getCurrentPublicGroup().addMessages(FunHolder.getCurrentPublicGroup().messagesBuf);
-        FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
-        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).setValue(FunHolder.getCurrentPublicGroup());
-        Toast.makeText(context, "onDestroy msgs: " + FunHolder.getCurrentPublicGroup().messagesBuf, Toast.LENGTH_SHORT).show();
-        userRef.removeEventListener(usersListener);
-        messageRef.removeEventListener(messagesListener);
+//        FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
+//        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).setValue(FunHolder.getCurrentPublicGroup());
+//        Toast.makeText(context, "onDestroy msgs: " + FunHolder.getCurrentPublicGroup().messagesBuf, Toast.LENGTH_SHORT).show();
+//        userRef.removeEventListener(usersListener);
+//        messageRef.removeEventListener(messagesListener);
         super.onDestroy();
     }
     private static void updateMarkers(){

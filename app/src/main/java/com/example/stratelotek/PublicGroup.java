@@ -126,8 +126,9 @@ public class PublicGroup {
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").child(Integer.toString(messageCounter)).setValue(message);
     }
 
-    public  void addMessages(List<Message> messages){
-        for(Message m:messages){
+    public  void addMessages(List<Message> msgs){
+        for(Message m:msgs){
+            messages.add(m);
             MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(messageCounter);
             MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").child(Integer.toString(messageCounter)).setValue(m);
         }

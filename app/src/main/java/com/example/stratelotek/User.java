@@ -2,6 +2,7 @@ package com.example.stratelotek;
 
 import android.location.Location;
 
+import com.example.stratelotek.ui.group.Message;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -10,6 +11,9 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @IgnoreExtraProperties
 public class User {
@@ -30,6 +34,7 @@ public class User {
 
     public double locLat;
     public double locLon;
+
 
 
     @Exclude
