@@ -5,6 +5,8 @@ import com.example.stratelotek.ui.group.Message;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.ArrayList;
+import java.util.List;
+
 @IgnoreExtraProperties
 public class PrivateGroup extends PublicGroup {
     public static int privateGroupCounter;
@@ -16,11 +18,6 @@ public class PrivateGroup extends PublicGroup {
         if(password.equals("")){
             throw new BlankPasswordException("Please fill the password field.");
         }
-//        addUser(new User("user6p"), "abc");
-//        addUser(new User("user7p"), "abc");
-//        addUser(new User("user8p"), "abc");
-//        addUser(new User("user9p"), "abc");
-//        addUser(new User("user10p"), "abc");
         publicGroupCounter--;
         privateGroupCounter++;
         groupId = Integer.toString(privateGroupCounter);
@@ -103,9 +100,29 @@ public class PrivateGroup extends PublicGroup {
 
     @Override
     public void addMessage(Message message){
-        messages.add(message);
-        messageCounter++;
-        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messageCounter").setValue(Integer.toString(FunHolder.getCurrentPrivateGroup().getMessages().size()));
-        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messages").child(Integer.toString(FunHolder.getCurrentPrivateGroup().getMessages().size())).setValue(message);
+        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messageCounter").setValue(messageCounter);
+        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messages").child(Integer.toString(messageCounter)).setValue(message);
+    }
+
+    @Override
+    public void addMessages(List<Message> msgs){
+        messageCounter = 0;
+        for(Message m:msgs){
+            messages.add(m);
+            MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messageCounter").setValue(messageCounter);
+            MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messages").child(Integer.toString(messageCounter)).setValue(m);
+            messageCounter++;
+        }
+    }
+
+    @Override
+    public void removeUser(User user){
+        userList.removeIf(u -> u.getName().equals(user.getName()));
+
+        for(User u:userList){
+            if(u.getName().equals(user.getName()));
+            userList.remove(u);
+        }
+        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("userList").setValue(userList);
     }
 }

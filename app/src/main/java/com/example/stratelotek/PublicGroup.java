@@ -120,50 +120,19 @@ public class PublicGroup {
     }
 
     public void addMessage(Message message){
-        //messages.add(message);
-        //messageCounter++;
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(messageCounter);
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").child(Integer.toString(messageCounter)).setValue(message);
     }
 
     public  void addMessages(List<Message> msgs){
+        messageCounter = 0;
         for(Message m:msgs){
             messages.add(m);
             MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(messageCounter);
             MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").child(Integer.toString(messageCounter)).setValue(m);
+            messageCounter++;
         }
     }
-
-
-//    public void updateLocation() {
-//        int i = 0;
-//        this.locLat = 0.0;
-//        this.locLon = 0.0;
-//        for(User u:userList){
-//            if(u.getLatLng().longitude != 0.0 && u.getLatLng().latitude != 0.0){
-//                this.locLat += u.getLatLng().latitude;
-//                this.locLon += u.getLatLng().longitude;
-//                i++;
-//            }
-//        }
-//        if(i>0){
-//            this.locLat = locLat/i;
-//            this.locLon = locLat/i;
-//        }else{
-//            this.locLat = 0.0;
-//            this.locLon = 0.0;
-//        }
-//
-//
-//    }
-
-//    public LatLng getLatLng(){
-//        try{
-//            return new LatLng(locLat, locLon);
-//        }catch (Exception e){
-//            return new LatLng(1.1, 1.1);
-//        }
-//    }
 
 
     public void setLatLng(LatLng loc){
