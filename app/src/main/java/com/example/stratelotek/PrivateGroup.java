@@ -71,6 +71,9 @@ public class PrivateGroup extends PublicGroup {
     @Override
     public void destroyGroup(){
         userList.removeAll(userList);
+        messages.clear();
+        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messageCounter").setValue(null);
+        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messages").setValue(null);
         MainActivity.myRef.child("private_groups").child(getName()).setValue(null);
         privateGroupCounter--;
     }

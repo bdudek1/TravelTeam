@@ -101,7 +101,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     public static OnMapReadyCallback mapCallback;
     public static SupportMapFragment mapFragment;
     public static Thread thread;
-    public static final int LIFE_TIME = 500;
+    public static final int LIFE_TIME = 850;
     public static int lifeTime = LIFE_TIME;
     public final static List<Message> msgsBuf = new ArrayList<>();
 
