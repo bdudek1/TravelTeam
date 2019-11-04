@@ -35,11 +35,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Looper;
 import android.provider.Settings;
 import android.text.SpannableString;
 import android.util.Log;
@@ -68,6 +70,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static com.example.stratelotek.MainActivity.database;
 
@@ -96,7 +100,9 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     public static GoogleMap mMap;
     public static OnMapReadyCallback mapCallback;
     public static SupportMapFragment mapFragment;
-
+    public static Thread thread;
+    public static final int LIFE_TIME = 500;
+    public static int lifeTime = LIFE_TIME;
     public final static List<Message> msgsBuf = new ArrayList<>();
 
     public static GoogleApiClient mGoogleApiClient;
@@ -162,16 +168,16 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         markerAdapterList = new ArrayList<>();
         markerAdapterList.clear();
         if(MainActivity.isPublic){
-            messageRef = database.getReference("message/public_groups/"+MainActivity.groupName+"/messages");
-            messageCounterRef = database.getReference("message/public_groups/"+MainActivity.groupName+"/messageCounter");
-            userRef = database.getReference("message/public_groups/"+MainActivity.groupName+"/userList");
+            messageRef = database.getReference("public_groups/"+MainActivity.groupName+"/messages");
+            messageCounterRef = database.getReference("public_groups/"+MainActivity.groupName+"/messageCounter");
+            userRef = database.getReference("public_groups/"+MainActivity.groupName+"/userList");
             messageRef.keepSynced(false);
             messageCounterRef.keepSynced(false);
             userRef.keepSynced(false);
             groupsReference = "public_groups";
         }else{
-            messageRef = database.getReference("message/private_groups/"+MainActivity.groupName+"/messages");
-            userRef = database.getReference("message/private_groups/"+MainActivity.groupName+"/userList");
+            messageRef = database.getReference("private_groups/"+MainActivity.groupName+"/messages");
+            userRef = database.getReference("private_groups/"+MainActivity.groupName+"/userList");
             groupsReference = "private_groups";
         }
         groupRef = database.getReference("message/" + groupsReference +"/"+MainActivity.groupName);
@@ -269,6 +275,29 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                 navigation.getMenu().getItem(i).setEnabled(false);
             }
 
+//            ActivityChecker a = new ActivityChecker();
+//            a.run();
+            Timer timer = new Timer();
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    if(lifeTime>0){
+                        lifeTime--;
+                        System.out.println("lifeTime: " + lifeTime);
+                    }else{
+                        if(MainActivity.isPublic){
+                            FunHolder.getCurrentPublicGroup().destroyGroup();
+                        }else{
+                            FunHolder.getCurrentPrivateGroup().destroyGroup();
+                        }
+
+                    }
+
+                }
+            };
+
+            timer.schedule(task, 10000,3000);
+
 
             messagesListener = new ValueEventListener() {
                 @Override
@@ -338,6 +367,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             usersListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+                    lifeTime = LIFE_TIME;
                     Iterable<DataSnapshot> dataChildren = dataSnapshot.getChildren();
                     if(MainActivity.isPublic){
                         FunHolder.getCurrentPublicGroup().getUserList().clear();
@@ -481,9 +511,9 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         }
 
         Toast.makeText(context, "onBack msgsbuf: " + msgsBuf, Toast.LENGTH_SHORT).show();
-//        finish();
-//        startActivity(new Intent(this, MainActivity.class));
-        super.onBackPressed();
+        finish();
+        startActivity(new Intent(this, MainActivity.class));
+
     }
 
 
@@ -700,18 +730,24 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
     @Override
     public void onDestroy(){
+        if(markerAdapterList.contains(new MarkerAdapter(MainActivity.user, mMap))){
+            markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(MainActivity.user, mMap))).getMarker().setVisible(false);
+            markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(MainActivity.user, mMap))).getMarker().remove();
+            markerAdapterList.remove(markerAdapterList.indexOf(new MarkerAdapter(MainActivity.user, mMap)));
+        }
         if(MainActivity.isPublic){
             FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
-            //FunHolder.getCurrentPublicGroup().addMessages(msgsBuf);
+            FunHolder.getCurrentPublicGroup().tryToDestroy();
+            FunHolder.getCurrentPublicGroup().addMessages(msgsBuf);
         }else{
             FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
-            //FunHolder.getCurrentPrivateGroup().addMessages(msgsBuf);
+            FunHolder.getCurrentPrivateGroup().tryToDestroy();
+            FunHolder.getCurrentPrivateGroup().addMessages(msgsBuf);
         }
         super.onDestroy();
     }
     private static void updateMarkers(){
         if(mMap!=null){
-
 
 
             markerAdapterList.removeIf(x -> x == null);

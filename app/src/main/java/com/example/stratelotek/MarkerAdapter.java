@@ -38,25 +38,20 @@ public class MarkerAdapter{
 
         marker.setVisible(true);
         marker.setTitle(u.getName() + ": " + u.getLatLng());
-        marker.setSnippet("(mAdapter) Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng()) + "m");
+        String s;
+        if(FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())> 5000){
+            s  = "(mAdapter) Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())/1000 + "km";
+        }else{
+            s = "(mAdapter) Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng()) + "m";
+        }
+        marker.setSnippet(s);
         if(u.getName().equals(MainActivity.user.getName())){
             marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
         }else{
             marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         }
         marker.setPosition(u.getLatLng());
-//        if(marker!=null)
-//        marker.remove();
-//        if(gMap!=null){
-//            marker = gMap.addMarker(new MarkerOptions()
-//                    .position(u.getLatLng())
-//                    .title(u.getName() + ": " + u.getLatLng())
-//                    .snippet("added new"));
-//        }
 
-    }
-    public void setSnippet(String s){
-        marker.setSnippet(s);
     }
     public Marker getMarker(){
         return marker;

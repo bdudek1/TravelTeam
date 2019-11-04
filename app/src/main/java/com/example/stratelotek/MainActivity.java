@@ -84,7 +84,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
     static List<PrivateGroup> privateGroupList = new ArrayList<>();
     static String groupName;
     static String currentId;
-    static boolean isPublic;
+    public static boolean isPublic;
     static boolean isInPublicSection = false;
     public static User user;
     public static PublicGroup currentPublicGroup;
@@ -123,21 +123,21 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
         user = new User(currentUserName);
         database = FirebaseDatabase.getInstance();
-        myRef = database.getReference("message");
+        myRef = database.getReference();
 
-        myRef.setValue("Groups database");
+        //myRef.setValue("Groups database");
 
 
-        ValueEventListener postListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.w("Database error: ", "loadPost:onCancelled", databaseError.toException());
-            }
-        };
+//        ValueEventListener postListener = new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//                Log.w("Database error: ", "loadPost:onCancelled", databaseError.toException());
+//            }
+//        };
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
@@ -175,8 +175,8 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
             }
         });
-        publicGroupsRef = database.getReference("message/public_groups");
-        privateGroupsRef = database.getReference("message/private_groups");
+        publicGroupsRef = database.getReference("public_groups");
+        privateGroupsRef = database.getReference("private_groups");
         try{
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         }catch(SecurityException e){
