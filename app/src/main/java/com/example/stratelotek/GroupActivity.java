@@ -100,7 +100,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     public static GoogleMap mMap;
     public static OnMapReadyCallback mapCallback;
     public static SupportMapFragment mapFragment;
-    public static Thread thread;
     public static final int LIFE_TIME = 850;
     public static int lifeTime = LIFE_TIME;
     public final static List<Message> msgsBuf = new ArrayList<>();
@@ -115,11 +114,11 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
     private static LatLng latLng;
     private static boolean isPermission;
-
+    private static boolean isMapReady = false;
     private static DatabaseReference messageRef;
     private static DatabaseReference userRef;
     private static DatabaseReference messageCounterRef;
-    private static DatabaseReference groupRef;
+
 
     static ValueEventListener usersListener;
     static ValueEventListener messagesListener;
@@ -180,7 +179,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             userRef = database.getReference("private_groups/"+MainActivity.groupName+"/userList");
             groupsReference = "private_groups";
         }
-        groupRef = database.getReference("message/" + groupsReference +"/"+MainActivity.groupName);
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
@@ -200,16 +198,10 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         }
     }
     public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
+
         private static final String ARG_SECTION_NUMBER = "section_number";
 
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
+
         public static PlaceholderFragment newInstance(int sectionNumber) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
@@ -247,7 +239,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             tytul = rootView.findViewById(R.id.textTitle);
             tytul.setTextSize(32);
             nazwaGrupy = rootView.findViewById(R.id.groupName);
-            nazwaGrupy.setTextSize(32);
+            nazwaGrupy.setTextSize(18);
             nazwaGrupy.setText(MainActivity.groupName);
             listaUzytkownikow = rootView.findViewById(R.id.recyclerUsersList);
             chat = rootView.findViewById(R.id.recyclerChat);
@@ -275,8 +267,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                 navigation.getMenu().getItem(i).setEnabled(false);
             }
 
-//            ActivityChecker a = new ActivityChecker();
-//            a.run();
             Timer timer = new Timer();
             TimerTask task = new TimerTask() {
                 @Override
@@ -382,6 +372,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                             FunHolder.getCurrentPrivateGroup().getUserList().add(d.getValue(User.class));
                         }
                     }
+                    if(isMapReady)
+                    updateMarkers();
 
 
                     if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>0){
@@ -432,7 +424,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     }catch(NullPointerException e){
                         e.getMessage();
                     }
-                    updateMarkers();
                 }
 
                 @Override
@@ -550,6 +541,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             }
 
         }
+        isMapReady = true;
     }
 
     @Override

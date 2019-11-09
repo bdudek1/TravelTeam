@@ -158,13 +158,6 @@ public class PublicGroup {
         return messages;
     }
 
-    public ArrayList<String> getMessagesText(){
-        ArrayList<String> list = new ArrayList<>();
-        for(Message s: messages){
-            list.add(s.toString());
-        }
-        return list;
-    }
 
     public double getLocLat(){
         return locLat;
