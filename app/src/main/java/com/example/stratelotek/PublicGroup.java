@@ -18,12 +18,12 @@ public class PublicGroup {
     public double locLat;
     public double locLon;
     public int range;
-    public int messageCounter;
+    protected int messageCounter;
     protected ArrayList<User> userList = new ArrayList<>();
     protected ArrayList<Message> messages = new ArrayList<>();
 
     @Exclude
-    protected List<Message> messagesBuf = new ArrayList<>();
+    public List<Message> messagesBuf = new ArrayList<>();
 
 
     public PublicGroup(String name) throws BlankNameException{
@@ -69,11 +69,6 @@ public class PublicGroup {
 
     public void removeUser(User user){
         userList.removeIf(u -> u.getName().equals(user.getName()));
-
-        for(User u:userList){
-            if(u.getName().equals(user.getName()));
-            userList.remove(u);
-        }
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("userList").setValue(userList);
     }
 

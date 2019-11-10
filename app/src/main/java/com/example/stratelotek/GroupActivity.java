@@ -72,33 +72,32 @@ import static com.example.stratelotek.MainActivity.database;
 
 public class GroupActivity extends AppCompatActivity implements RecyclerViewAdapter.ItemClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
-    static Context context;
+    private static Context context;
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
-    static RecyclerViewAdapter.ItemClickListener listenerContext;
-    static RecyclerViewAdapterChat.ItemClickListener listenerContextChat;
-    static BottomNavigationView navigation;
+    private static RecyclerViewAdapter.ItemClickListener listenerContext;
+    private static RecyclerViewAdapterChat.ItemClickListener listenerContextChat;
+    private static BottomNavigationView navigation;
     static TextView tytul;
     static TextView nazwaGrupy;
     static EditText messageEtext;
-    static FloatingActionButton sendButton;
-    static RecyclerView chat;
-    static RecyclerView listaUzytkownikow;
-    static RecyclerViewAdapter adapter;
-    static RecyclerViewAdapterChat adapterChat;
-    static List<Message> messages;
-    static List<SpannableString> spannableMessages;
-    static List<String> users;
-    static List<MarkerAdapter> markerAdapterList;
-    static String groupsReference;
-    public static GoogleMap mMap;
-    public static OnMapReadyCallback mapCallback;
+    public static FloatingActionButton sendButton;
+    public static RecyclerView chat;
+    public static RecyclerView listaUzytkownikow;
+    private static RecyclerViewAdapter adapter;
+    private static RecyclerViewAdapterChat adapterChat;
+    private static List<Message> messages;
+    private static List<SpannableString> spannableMessages;
+    private static List<String> users;
+    public static String groupsReference;
+    private static GoogleMap mMap;
+    private static OnMapReadyCallback mapCallback;
     public static SupportMapFragment mapFragment;
     public static final int LIFE_TIME = 850;
     public static int lifeTime = LIFE_TIME;
     public final static List<Message> msgsBuf = new ArrayList<>();
 
-    public static GoogleApiClient mGoogleApiClient;
+    private static GoogleApiClient mGoogleApiClient;
     private static Location mLocation;
     private static LocationManager mLocationManager;
     private static LocationRequest mLocationRequest;
@@ -109,8 +108,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     private static LatLng latLng;
     private static boolean isPermission;
     private static boolean isMapReady = false;
-    private static DatabaseReference messageRef;
-    private static DatabaseReference userRef;
+    public static DatabaseReference messageRef;
+    public static DatabaseReference userRef;
     private static DatabaseReference messageCounterRef;
 
 
@@ -144,6 +143,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         super.onCreate(savedInstanceState);
         setTheme(R.style.AppLotek);
         setContentView(R.layout.group_activity);
+        Intent stickyService = new Intent(this, StickyService.class);
+        startService(stickyService);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container_group, GroupFragment.newInstance())
@@ -158,21 +159,21 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         context = GroupActivity.this;
         messages = new ArrayList<>();
         users = new ArrayList<>();
-        markerAdapterList = new ArrayList<>();
-        markerAdapterList.clear();
         if(MainActivity.isPublic){
             messageRef = database.getReference("public_groups/"+MainActivity.groupName+"/messages");
             messageCounterRef = database.getReference("public_groups/"+MainActivity.groupName+"/messageCounter");
             userRef = database.getReference("public_groups/"+MainActivity.groupName+"/userList");
-            messageRef.keepSynced(false);
-            messageCounterRef.keepSynced(false);
-            userRef.keepSynced(false);
             groupsReference = "public_groups";
         }else{
             messageRef = database.getReference("private_groups/"+MainActivity.groupName+"/messages");
+            messageCounterRef = database.getReference("public_groups/"+MainActivity.groupName+"/messageCounter");
             userRef = database.getReference("private_groups/"+MainActivity.groupName+"/userList");
             groupsReference = "private_groups";
+
         }
+        messageRef.keepSynced(false);
+        messageCounterRef.keepSynced(false);
+        userRef.keepSynced(false);
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
@@ -359,43 +360,22 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     }else{
                         FunHolder.getCurrentPrivateGroup().getUserList().clear();
                     }
+                    try{
+                        mapFragment = (SupportMapFragment) getChildFragmentManager()
+                                .findFragmentById(R.id.mapView);
+                        mapFragment.getMapAsync(mapCallback);
+                    }catch(IllegalStateException e){
+                        e.getMessage();
+                    }
 
-                    markerAdapterList.removeIf(x -> x == null);
-                    markerAdapterList.removeIf(x -> x.userName == null);
-                    markerAdapterList.removeIf(x -> x.getMarker().getPosition().latitude==0.0);
-                    //markerAdapterList.clear();
-                   // mapFragment = mapFragment.newInstance();
-                    //mMap.clear();
-                    mapFragment = (SupportMapFragment) getChildFragmentManager()
-                            .findFragmentById(R.id.mapView);
-                    mapFragment.getMapAsync(mapCallback);
 
                     for(DataSnapshot d:dataChildren){
                         if(MainActivity.isPublic){
                             FunHolder.getCurrentPublicGroup().getUserList().add(d.getValue(User.class));
-//                            mMap.addMarker(new MarkerOptions()
-//                                            .position(d.getValue(User.class).getLatLng())
-//                                            .title(d.getValue(User.class).getName() + ": " + d.getValue(User.class).getLatLng()));
-//                            if(mMap != null && markerAdapterList.contains(new MarkerAdapter(d.getValue(User.class)))){
-//                                markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(d.getValue(User.class)))).setPosition(d.getValue(User.class));
-//                            }else if(mMap != null){
-//                                markerAdapterList.add(new MarkerAdapter(d.getValue(User.class)));
-//                            }
-                            //if(mMap!=null)
-                            //Toast.makeText(context, markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(d.getValue(User.class)))).getMarker().getPosition().toString(), Toast.LENGTH_SHORT).show();
-                            //Toast.makeText(context, d.getValue(User.class).toString() , Toast.LENGTH_SHORT).show();
                         }else{
                             FunHolder.getCurrentPrivateGroup().getUserList().add(d.getValue(User.class));
-//                            if(markerAdapterList.contains(new MarkerAdapter(d.getValue(User.class)))){
-//                                markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(d.getValue(User.class)))).setPosition(d.getValue(User.class));
-//                            }else{
-//                                markerAdapterList.add(new MarkerAdapter(d.getValue(User.class)));
-//                            }
                         }
                     }
-
-                    if(isMapReady)
-                    //updateMarkers();
 
                     if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>0){
                         if(FunHolder.getCurrentPublicGroup().locLat == 0.0 || FunHolder.getCurrentPublicGroup().locLon == 0.0){
@@ -522,10 +502,13 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         }else{
             msgsBuf.addAll(FunHolder.getCurrentPrivateGroup().messagesBuf);
         }
-
-        Toast.makeText(context, "onBack msgsbuf: " + msgsBuf, Toast.LENGTH_SHORT).show();
-        finish();
-        startActivity(new Intent(this, MainActivity.class));
+        if(MainActivity.isPublic){
+            FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
+        }else{
+            FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
+        }
+        MainActivity.user.setName(MainActivity.user.getName());
+        super.onBackPressed();
 
     }
 
@@ -556,7 +539,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         if (latLng != null && latLng.longitude != 0.0 && latLng.latitude != 0.0) {
             MainActivity.user.setLocation(latLng);
 
-            //mapFragment.getMapAsync(mapCallback);
             if(isMapReady == false){
                 try{
                     moveToCurrentLocation(MainActivity.user.getLatLng());
@@ -666,19 +648,16 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
     @Override
     protected void onStop() {
-        super.onStop();
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
-
         if(usersListener!=null && userRef!=null)
         userRef.removeEventListener(usersListener);
         if(messageRef!=null && messagesListener!=null)
         messageRef.removeEventListener(messagesListener);
-
-       // if(mapFragment!=null)
-//        mapFragment.onStop();
+        super.onStop();
     }
+
 
     @Override
     public void onPause(){
