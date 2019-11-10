@@ -37,8 +37,6 @@ public class User {
 
 
 
-    @Exclude
-    private Marker marker;
 
     public void setName(String name){
         this.name = name;
@@ -120,12 +118,6 @@ public class User {
     @Override
     public String toString(){
         return name;
-    }
-    @Exclude
-    public Marker getMarker(){return marker;}
-
-    public void resetMarker(){
-        marker = null;
     }
 
 

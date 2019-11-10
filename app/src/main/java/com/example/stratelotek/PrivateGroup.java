@@ -122,11 +122,6 @@ public class PrivateGroup extends PublicGroup {
     @Override
     public void removeUser(User user){
         userList.removeIf(u -> u.getName().equals(user.getName()));
-
-        for(User u:userList){
-            if(u.getName().equals(user.getName()));
-            userList.remove(u);
-        }
         MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("userList").setValue(userList);
     }
 }

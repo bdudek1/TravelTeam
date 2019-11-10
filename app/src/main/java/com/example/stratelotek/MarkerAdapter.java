@@ -2,21 +2,31 @@ package com.example.stratelotek;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MarkerAdapter{
     public String userName = "defaultName";
     Marker marker;
-    public MarkerAdapter(User u, GoogleMap gMap){
+    public MarkerAdapter(User u){
+        String s;
+        if(FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())> 5000){
+            s  = "(mAdapter) Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())/1000 + "km";
+        }else{
+            s = "(mAdapter) Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng()) + "m";
+        }
+
         userName = u.getName();
-            marker = gMap.addMarker(new MarkerOptions()
+            marker = GroupActivity.mMap.addMarker(new MarkerOptions()
                     .position(u.getLatLng())
                     .title(u.getName() + ": " + u.getLatLng())
-                    .snippet("(mAdapter)Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng()) + "m"));
-
-            marker.setVisible(false);
+                    .snippet(s));
+        if(u != null && u.getName().equals(MainActivity.user.getName())){
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        }else if(u!=null){
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+        }
+            //marker.setVisible(false);
         //marker.remove();
     }
 
@@ -34,16 +44,15 @@ public class MarkerAdapter{
         }
     }
 
-    public void setPosition(User u, GoogleMap gMap){
-
-        marker.setVisible(true);
-        marker.setTitle(u.getName() + ": " + u.getLatLng());
+    public void setPosition(User u){
         String s;
+        marker.setVisible(true);
         if(FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())> 5000){
             s  = "(mAdapter) Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())/1000 + "km";
         }else{
             s = "(mAdapter) Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng()) + "m";
         }
+        marker.setTitle(u.getName() + ": " + u.getLatLng());
         marker.setSnippet(s);
         if(u.getName().equals(MainActivity.user.getName())){
             marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
@@ -51,6 +60,8 @@ public class MarkerAdapter{
             marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         }
         marker.setPosition(u.getLatLng());
+        marker.setDraggable(true);
+        marker.setVisible(true);
 
     }
     public Marker getMarker(){

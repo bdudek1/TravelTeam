@@ -12,12 +12,11 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -35,13 +34,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.Looper;
 import android.provider.Settings;
 import android.text.SpannableString;
 import android.util.Log;
@@ -65,9 +62,6 @@ import com.karumi.dexter.listener.single.PermissionListener;
 
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Timer;
@@ -224,7 +218,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                 mapViewBundle = savedInstanceState.getBundle(MAP_VIEW_BUNDLE_KEY);
             }
 
-
             mapFragment = (SupportMapFragment) getChildFragmentManager()
                     .findFragmentById(R.id.mapView);
             mapFragment.getMapAsync(mapCallback);
@@ -358,23 +351,51 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     lifeTime = LIFE_TIME;
+                    mapFragment = mapFragment.newInstance();
                     Iterable<DataSnapshot> dataChildren = dataSnapshot.getChildren();
+
                     if(MainActivity.isPublic){
                         FunHolder.getCurrentPublicGroup().getUserList().clear();
                     }else{
                         FunHolder.getCurrentPrivateGroup().getUserList().clear();
                     }
 
+                    markerAdapterList.removeIf(x -> x == null);
+                    markerAdapterList.removeIf(x -> x.userName == null);
+                    markerAdapterList.removeIf(x -> x.getMarker().getPosition().latitude==0.0);
+                    //markerAdapterList.clear();
+                   // mapFragment = mapFragment.newInstance();
+                    //mMap.clear();
+                    mapFragment = (SupportMapFragment) getChildFragmentManager()
+                            .findFragmentById(R.id.mapView);
+                    mapFragment.getMapAsync(mapCallback);
+
                     for(DataSnapshot d:dataChildren){
                         if(MainActivity.isPublic){
                             FunHolder.getCurrentPublicGroup().getUserList().add(d.getValue(User.class));
+//                            mMap.addMarker(new MarkerOptions()
+//                                            .position(d.getValue(User.class).getLatLng())
+//                                            .title(d.getValue(User.class).getName() + ": " + d.getValue(User.class).getLatLng()));
+//                            if(mMap != null && markerAdapterList.contains(new MarkerAdapter(d.getValue(User.class)))){
+//                                markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(d.getValue(User.class)))).setPosition(d.getValue(User.class));
+//                            }else if(mMap != null){
+//                                markerAdapterList.add(new MarkerAdapter(d.getValue(User.class)));
+//                            }
+                            //if(mMap!=null)
+                            //Toast.makeText(context, markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(d.getValue(User.class)))).getMarker().getPosition().toString(), Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(context, d.getValue(User.class).toString() , Toast.LENGTH_SHORT).show();
                         }else{
                             FunHolder.getCurrentPrivateGroup().getUserList().add(d.getValue(User.class));
+//                            if(markerAdapterList.contains(new MarkerAdapter(d.getValue(User.class)))){
+//                                markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(d.getValue(User.class)))).setPosition(d.getValue(User.class));
+//                            }else{
+//                                markerAdapterList.add(new MarkerAdapter(d.getValue(User.class)));
+//                            }
                         }
                     }
-                    if(isMapReady)
-                    updateMarkers();
 
+                    if(isMapReady)
+                    //updateMarkers();
 
                     if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>0){
                         if(FunHolder.getCurrentPublicGroup().locLat == 0.0 || FunHolder.getCurrentPublicGroup().locLon == 0.0){
@@ -420,6 +441,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         adapter.notifyDataSetChanged();
                         listaUzytkownikow.setAdapter(adapter);
                         listaUzytkownikow.invalidate();
+
 
                     }catch(NullPointerException e){
                         e.getMessage();
@@ -529,16 +551,50 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     @Override
     public void onMapReady(GoogleMap map) {
         mMap = map;
+        mMap.clear();
 
         if (latLng != null && latLng.longitude != 0.0 && latLng.latitude != 0.0) {
             MainActivity.user.setLocation(latLng);
-            mapFragment.getMapAsync(mapCallback);
 
-            try{
-                moveToCurrentLocation(MainActivity.user.getLatLng());
-            }catch(NullPointerException e){
-                e.getMessage();
+            //mapFragment.getMapAsync(mapCallback);
+            if(isMapReady == false){
+                try{
+                    moveToCurrentLocation(MainActivity.user.getLatLng());
+                }catch(NullPointerException e){
+                    e.getMessage();
+                }
             }
+
+            if(MainActivity.isPublic){
+                for(User u:FunHolder.getCurrentPublicGroup().getUserList()){
+                    String s;
+                    if(FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())> 5000){
+                        s  = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())/1000 + "km";
+                    }else{
+                        s = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng()) + "m";
+                    }
+                    mMap.addMarker(new MarkerOptions()
+                            .position(u.getLatLng())
+                            .title(u.getName())
+                            .snippet(s)
+                            .icon(u.getName().equals(MainActivity.user.getName()) ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                }
+            }else{
+                for(User u:FunHolder.getCurrentPrivateGroup().getUserList()){
+                    String s;
+                    if(FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())> 5000){
+                        s  = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())/1000 + "km";
+                    }else{
+                        s = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng()) + "m";
+                    }
+                    mMap.addMarker(new MarkerOptions()
+                            .position(u.getLatLng())
+                            .title(u.getName())
+                            .snippet(s)
+                            .icon(u.getName().equals(MainActivity.user.getName()) ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                }
+            }
+
 
         }
         isMapReady = true;
@@ -620,7 +676,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         if(messageRef!=null && messagesListener!=null)
         messageRef.removeEventListener(messagesListener);
 
-        mapFragment.onStop();
+       // if(mapFragment!=null)
+//        mapFragment.onStop();
     }
 
     @Override
@@ -722,11 +779,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
     @Override
     public void onDestroy(){
-        if(markerAdapterList.contains(new MarkerAdapter(MainActivity.user, mMap))){
-            markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(MainActivity.user, mMap))).getMarker().setVisible(false);
-            markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(MainActivity.user, mMap))).getMarker().remove();
-            markerAdapterList.remove(markerAdapterList.indexOf(new MarkerAdapter(MainActivity.user, mMap)));
-        }
         if(MainActivity.isPublic){
             FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
             FunHolder.getCurrentPublicGroup().tryToDestroy();
@@ -738,34 +790,5 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         }
         super.onDestroy();
     }
-    private static void updateMarkers(){
-        if(mMap!=null){
 
-
-            markerAdapterList.removeIf(x -> x == null);
-            markerAdapterList.removeIf(x -> x.userName == null);
-
-
-            if(MainActivity.isPublic){
-                for(User u:FunHolder.getCurrentPublicGroup().getUserList()){
-                    if(markerAdapterList.contains(new MarkerAdapter(u, mMap))){
-                        markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(u, mMap))).setPosition(u, mMap);
-                    }else{
-                        markerAdapterList.add(new MarkerAdapter(u, mMap));
-                    }
-
-                }
-
-            }else{
-                for(User u:FunHolder.getCurrentPrivateGroup().getUserList()){
-                    if(markerAdapterList.contains(new MarkerAdapter(u, mMap))){
-                        markerAdapterList.get(markerAdapterList.indexOf(new MarkerAdapter(u, mMap))).setPosition(u, mMap);
-                    }else{
-                        markerAdapterList.add(new MarkerAdapter(u, mMap));
-                    }
-                }
-
-            }
-        }
-    }
 }

@@ -468,19 +468,23 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                         EditText name = (EditText)dialogView.findViewById(R.id.userNameChange);
                                         try{
                                             if(name.getText().toString().equals("")){
-                                                throw new BlankNameException("Please enter your nickname");
+                                                throw new BlankNameException("Please enter your nickname.");
+                                            }else if(name.getText().toString().length()>11){
+                                                throw new TooLongNameException("Name should have less than 12 characters.");
                                             }else{
-                                                userName = (TextView) rootView.findViewById(R.id.inputNickText);
-                                                userName.setText(name.getText().toString());
-                                                userName.invalidate();
-                                                user.setName(name.getText().toString());
+                                                    userName = (TextView) rootView.findViewById(R.id.inputNickText);
+                                                    userName.setText(name.getText().toString());
+                                                    userName.invalidate();
+                                                    user.setName(name.getText().toString());
                                             }
 
                                         }catch(BlankNameException e){
-
+                                            e.getMessage();
+                                        }catch(TooLongNameException e){
+                                            e.getMessage();
                                         }
 
-                                        Toast.makeText(context, "user.getName(): "+user.getName() + ", userName.getText().toString(): " + userName.getText().toString(), Toast.LENGTH_SHORT).show();
+
 
                                 }
                             })
