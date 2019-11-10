@@ -15,6 +15,8 @@ public class StickyService extends Service {
         return null;
     }
 
+
+
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         if(MainActivity.isPublic){

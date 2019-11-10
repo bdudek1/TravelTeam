@@ -445,7 +445,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                             .setMessage("Swipe left and right to navigate through application.\n" +
                                     "You can set the range before seeking for group, then only groups in the range will be shown and groups without set range.\n" +
                                     "When creating a group you can set the range so only people in the range will be able to join the group.\n" +
-                                    "If will not set the range before creating a group people from the whole earth will be able to joi the group.\n" +
+                                    "If you will not set the range before creating a group people from the whole earth will be able to join the group.\n" +
                                     "Private groups require a password to join them.\n" +
                                     "In the group you can see other people on the map, check the distance between you and them and chat with them.")
                             .setPositiveButton("Ok", new DialogInterface.OnClickListener() {

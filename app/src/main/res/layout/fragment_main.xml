@@ -83,7 +83,7 @@
         android:layout_width="323dp"
         android:layout_height="100dp"
         android:layout_marginStart="16dp"
-        android:text='Welcome to Team Ups. Slide left to start using or click "Information" for a quick tutorial.'
+        android:text='Welcome to Travel Team. Slide left to start using or click "Information" for a quick tutorial.'
         app:layout_constraintBottom_toTopOf="@+id/buttonInformacje"
         app:layout_constraintStart_toStartOf="parent" />
 
