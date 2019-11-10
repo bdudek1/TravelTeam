@@ -12,15 +12,15 @@ import java.util.List;
 
 @IgnoreExtraProperties
 public class PublicGroup {
-    public static int publicGroupCounter;
-    private String name;
+    public static int publicGroupCounter = 0;
+    protected String name;
     private String groupId;
     public double locLat;
     public double locLon;
     public int range;
-    protected int messageCounter;
-    protected ArrayList<User> userList = new ArrayList<>();
-    protected ArrayList<Message> messages = new ArrayList<>();
+    public int messageCounter;
+    public ArrayList<User> userList = new ArrayList<>();
+    public ArrayList<Message> messages = new ArrayList<>();
 
     @Exclude
     public List<Message> messagesBuf = new ArrayList<>();
@@ -32,12 +32,6 @@ public class PublicGroup {
         }
         this.name = name;
         messageCounter = 0;
-        //54.2328, 16.305
-//        addUser(new User("user1", 54.2328, 16.305));
-//        addUser(new User("user2", 54.233, 16.31));
-//        addUser(new User("user3", 54.22, 16.0));
-//        addUser(new User("user4",54.24, 16.32));
-//        addUser(new User("user5", 54.242, 16.312));
         publicGroupCounter++;
         groupId = Integer.toString(publicGroupCounter);
     }

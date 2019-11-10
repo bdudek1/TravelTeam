@@ -93,8 +93,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     private static GoogleMap mMap;
     private static OnMapReadyCallback mapCallback;
     public static SupportMapFragment mapFragment;
-    public static final int LIFE_TIME = 850;
-    public static int lifeTime = LIFE_TIME;
     public final static List<Message> msgsBuf = new ArrayList<>();
 
     private static GoogleApiClient mGoogleApiClient;
@@ -102,8 +100,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     private static LocationManager mLocationManager;
     private static LocationRequest mLocationRequest;
     private static com.google.android.gms.location.LocationListener listener;
-    private static long UPDATE_INTERVAL = 1000;  /* 10 secs */
-    private static long FASTEST_INTERVAL = 5000; /* 20 sec */
+    private static long UPDATE_INTERVAL = 1500;  /* 10 secs */
+    private static long FASTEST_INTERVAL = 7500; /* 20 sec */
 
     private static LatLng latLng;
     private static boolean isPermission;
@@ -261,28 +259,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                 navigation.getMenu().getItem(i).setEnabled(false);
             }
 
-            Timer timer = new Timer();
-            TimerTask task = new TimerTask() {
-                @Override
-                public void run() {
-                    if(lifeTime>0){
-                        lifeTime--;
-                        System.out.println("lifeTime: " + lifeTime);
-                    }else{
-                        if(MainActivity.isPublic){
-                            FunHolder.getCurrentPublicGroup().destroyGroup();
-                        }else{
-                            FunHolder.getCurrentPrivateGroup().destroyGroup();
-                        }
-
-                    }
-
-                }
-            };
-
-            timer.schedule(task, 10000,3000);
-
-
             messagesListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -351,7 +327,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             usersListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    lifeTime = LIFE_TIME;
                     mapFragment = mapFragment.newInstance();
                     Iterable<DataSnapshot> dataChildren = dataSnapshot.getChildren();
 

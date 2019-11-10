@@ -9,16 +9,18 @@ import java.util.List;
 
 @IgnoreExtraProperties
 public class PrivateGroup extends PublicGroup {
-    public static int privateGroupCounter;
+    public static int privateGroupCounter = 0;
     private int usersCounter;
     private String password;
     private String groupId;
-    public PrivateGroup(String name, String password) throws BlankPasswordException{
-        super(name);
+    public PrivateGroup(String name, String password) throws BlankPasswordException, BlankNameException{
+        if(name.equals("")){
+            throw new BlankNameException("Please enter the group name.");
+        }
         if(password.equals("")){
             throw new BlankPasswordException("Please fill the password field.");
         }
-        publicGroupCounter--;
+        this.name = name;
         privateGroupCounter++;
         groupId = Integer.toString(privateGroupCounter);
         this.password = password;
