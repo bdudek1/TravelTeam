@@ -101,7 +101,7 @@ public class FunHolder {
                 }else{
                     if(MainActivity.range > getDistance(MainActivity.user.getLatLng(), new LatLng(g.getLocLat(), g.getLocLon()))){
                         names.add(g.toStringRepresentation());
-                    };
+                    }
                 }
             }
 
@@ -127,13 +127,6 @@ public class FunHolder {
         }
         return names;
     }
-    public static List<Message> stringToMessages(List<String> list){
-        List<Message> messageList = new ArrayList<>();
-        for(String s:list){
-            messageList.add(new Message(s));
-        }
-        return messageList;
-    }
 
     public static int getDistance(LatLng loc1, LatLng loc2){
         Location l1 = new Location("buf");
@@ -145,16 +138,5 @@ public class FunHolder {
         return (int)l1.distanceTo(l2);
     }
 
-    public static LatLng updateLoc(List<User> uList){
-        double longtitude = 0.0;
-        double latitude = 0.0;
-        for(User u:uList){
-            longtitude+=u.getLatLng().longitude;
-            latitude+=u.getLatLng().latitude;
-        }
-        longtitude = longtitude/uList.size();
-        latitude = latitude/uList.size();
-        return new LatLng(latitude, longtitude);
-    }
 
 }

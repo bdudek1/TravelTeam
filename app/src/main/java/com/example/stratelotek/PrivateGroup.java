@@ -45,7 +45,6 @@ public class PrivateGroup extends PublicGroup {
             user.setUserNumber(userList.size());
             userList.add(user);
             usersCounter++;
-            MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("userList").child(Integer.toString(userList.size()-1)).setValue(user);
         }
         return isAdded;
     }
@@ -66,7 +65,6 @@ public class PrivateGroup extends PublicGroup {
             usersCounter++;
             user.setUserNumber(userList.size());
             userList.add(user);
-            //MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("userList").child(Integer.toString(usersCounter)).setValue(user);
         }
         return isAdded;
     }
@@ -79,15 +77,6 @@ public class PrivateGroup extends PublicGroup {
         MainActivity.myRef.child("private_groups").child(getName()).setValue(null);
         privateGroupCounter--;
     }
-    @Override
-    public boolean isEmpty(){
-        if(userList.isEmpty()){
-            return true;
-        }else{
-            return false;
-        }
-    }
-
 
 
 

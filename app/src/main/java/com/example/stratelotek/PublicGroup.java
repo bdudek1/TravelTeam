@@ -52,7 +52,6 @@ public class PublicGroup {
             if(isAdded){
                 user.setUserNumber(userList.size());
                 userList.add(user);
-                MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("userList").child(Integer.toString(userList.size()-1)).setValue(user);
             }
         }else{
             isAdded = false;
@@ -100,13 +99,6 @@ public class PublicGroup {
         return list;
     }
 
-    public boolean isEmpty(){
-        if(userList.isEmpty()){
-            return true;
-        }else{
-            return false;
-        }
-    }
 
     public String getGroupId(){
         return groupId;

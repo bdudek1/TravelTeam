@@ -19,15 +19,17 @@ public class StickyService extends Service {
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        if(MainActivity.isPublic){
+        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>1){
             GroupActivity.msgsBuf.addAll(FunHolder.getCurrentPublicGroup().messagesBuf);
-        }else{
+        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>1){
             GroupActivity.msgsBuf.addAll(FunHolder.getCurrentPrivateGroup().messagesBuf);
         }
         if(MainActivity.isPublic){
             FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
+            FunHolder.getCurrentPublicGroup().tryToDestroy();
         }else{
             FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
+            FunHolder.getCurrentPrivateGroup().tryToDestroy();
         }
 
         if(GroupActivity.usersListener!=null && GroupActivity.userRef!=null)

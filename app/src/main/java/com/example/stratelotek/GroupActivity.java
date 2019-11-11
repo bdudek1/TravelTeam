@@ -472,16 +472,22 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     }
     @Override
     public void onBackPressed() {
-        if(MainActivity.isPublic){
+        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>1){
             msgsBuf.addAll(FunHolder.getCurrentPublicGroup().messagesBuf);
-        }else{
+        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>1){
             msgsBuf.addAll(FunHolder.getCurrentPrivateGroup().messagesBuf);
         }
         if(MainActivity.isPublic){
             FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
+            FunHolder.getCurrentPublicGroup().tryToDestroy();
         }else{
             FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
+            FunHolder.getCurrentPrivateGroup().tryToDestroy();
         }
+        if(GroupActivity.usersListener!=null && GroupActivity.userRef!=null)
+            GroupActivity.userRef.removeEventListener(GroupActivity.usersListener);
+        if(GroupActivity.messageRef!=null && GroupActivity.messagesListener!=null)
+            GroupActivity.messageRef.removeEventListener(GroupActivity.messagesListener);
         MainActivity.user.setName(MainActivity.user.getName());
         super.onBackPressed();
 

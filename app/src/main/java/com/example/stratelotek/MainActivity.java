@@ -570,6 +570,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                     Toast.makeText(this, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
                         e.getMessage();
                     }catch (SameNameUserException e){
+                    Toast.makeText(MainActivity.context, "User with same name is present in the group, please change your name", Toast.LENGTH_LONG).show();
                         e.getMessage();
                   }
 
@@ -604,6 +605,8 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                     }catch (SameNameUserException e){
 
                                     }catch (WrongPasswordException e){
+                                        Toast.makeText(MainActivity.context, "Wrong password, please try again",
+                                                Toast.LENGTH_LONG).show();
 
                                     }catch (IndexOutOfBoundsException e){
                                         Toast.makeText(getApplicationContext(), "Please refresh the group list.", Toast.LENGTH_SHORT).show();
@@ -790,11 +793,11 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
                         public void onClick(DialogInterface arg0, int arg1) {
+                            MainActivity.super.onBackPressed();
+                            finish();
                             System.exit(0);
-                            //MainActivity.super.onBackPressed();
                         }
                     }).create().show();
-
     }
 
     @Override
