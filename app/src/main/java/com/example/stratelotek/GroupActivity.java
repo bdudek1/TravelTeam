@@ -62,8 +62,10 @@ import com.karumi.dexter.listener.single.PermissionListener;
 
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -351,6 +353,15 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                             FunHolder.getCurrentPrivateGroup().getUserList().add(d.getValue(User.class));
                         }
                     }
+                    if(MainActivity.isPublic){
+                        Set<User> userSet = new HashSet<User>(FunHolder.getCurrentPublicGroup().getUserList());
+                        FunHolder.getCurrentPublicGroup().getUserList().clear();
+                        FunHolder.getCurrentPublicGroup().getUserList().addAll(userSet);
+                    }else{
+                        Set<User> userSet = new HashSet<User>(FunHolder.getCurrentPrivateGroup().getUserList());
+                        FunHolder.getCurrentPrivateGroup().getUserList().clear();
+                        FunHolder.getCurrentPrivateGroup().getUserList().addAll(userSet);
+                    }
 
                     if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>0){
                         if(FunHolder.getCurrentPublicGroup().locLat == 0.0 || FunHolder.getCurrentPublicGroup().locLon == 0.0){
@@ -472,9 +483,9 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     }
     @Override
     public void onBackPressed() {
-        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>1){
+        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>0){
             msgsBuf.addAll(FunHolder.getCurrentPublicGroup().messagesBuf);
-        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>1){
+        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>0){
             msgsBuf.addAll(FunHolder.getCurrentPrivateGroup().messagesBuf);
         }
         if(MainActivity.isPublic){
@@ -483,6 +494,11 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         }else{
             FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
             FunHolder.getCurrentPrivateGroup().tryToDestroy();
+        }
+        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()<2){
+            FunHolder.getCurrentPublicGroup().getUserList().clear();
+        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()<2){
+            FunHolder.getCurrentPrivateGroup().getUserList().clear();
         }
         if(GroupActivity.usersListener!=null && GroupActivity.userRef!=null)
             GroupActivity.userRef.removeEventListener(GroupActivity.usersListener);
@@ -601,6 +617,11 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         if(latLng != null && latLng.latitude != 0.0 && latLng.longitude != 0.0){
             MainActivity.user.setLocation(latLng);
         }
+//        if(MainActivity.isPublic){
+//            MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(FunHolder.getCurrentPublicGroup().getUserList());
+//        }else{
+//            MainActivity.myRef.child("private_groups").child(FunHolder.getCurrentPrivateGroup().getName()).child("userList").setValue(FunHolder.getCurrentPrivateGroup().getUserList());
+//        }
 
     }
 
@@ -622,6 +643,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     @Override
     protected void onStart() {
         super.onStart();
+        msgsBuf.clear();
         if (mGoogleApiClient != null) {
             mGoogleApiClient.connect();
         }

@@ -31,7 +31,11 @@ public class StickyService extends Service {
             FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
             FunHolder.getCurrentPrivateGroup().tryToDestroy();
         }
-
+        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()<2){
+            FunHolder.getCurrentPublicGroup().getUserList().clear();
+        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()<2){
+            FunHolder.getCurrentPrivateGroup().getUserList().clear();
+        }
         if(GroupActivity.usersListener!=null && GroupActivity.userRef!=null)
             GroupActivity.userRef.removeEventListener(GroupActivity.usersListener);
         if(GroupActivity.messageRef!=null && GroupActivity.messagesListener!=null)
