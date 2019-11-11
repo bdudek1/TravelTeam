@@ -603,7 +603,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                         }
 
                                     }catch (SameNameUserException e){
-
+                                        Toast.makeText(MainActivity.context, "User with same name is present in the group, please change your name", Toast.LENGTH_LONG).show();
                                     }catch (WrongPasswordException e){
                                         Toast.makeText(MainActivity.context, "Wrong password, please try again",
                                                 Toast.LENGTH_LONG).show();

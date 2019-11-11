@@ -61,7 +61,7 @@ public class PublicGroup {
     }
 
     public void removeUser(User user){
-        userList.removeIf(u -> u.getName().equals(user.getName()));
+        userList.removeIf(u -> u.equals(user));
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("userList").setValue(userList);
     }
 
@@ -81,7 +81,7 @@ public class PublicGroup {
         userList.removeAll(userList);
         messages.clear();
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(null);
-        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").setValue(null);
+        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").setValue(messages);
         MainActivity.myRef.child("public_groups").child(getName()).setValue(null);
         publicGroupCounter--;
     }

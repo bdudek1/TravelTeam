@@ -73,7 +73,7 @@ public class PrivateGroup extends PublicGroup {
         userList.removeAll(userList);
         messages.clear();
         MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messageCounter").setValue(null);
-        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messages").setValue(null);
+        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messages").setValue(messages);
         MainActivity.myRef.child("private_groups").child(getName()).setValue(null);
         privateGroupCounter--;
     }
@@ -112,7 +112,7 @@ public class PrivateGroup extends PublicGroup {
 
     @Override
     public void removeUser(User user){
-        userList.removeIf(u -> u.getName().equals(user.getName()));
+        userList.removeIf(u -> u.equals(user));
         MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("userList").setValue(userList);
     }
 }
