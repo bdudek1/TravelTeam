@@ -337,13 +337,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     }else{
                         FunHolder.getCurrentPrivateGroup().getUserList().clear();
                     }
-                    try{
-                        mapFragment = (SupportMapFragment) getChildFragmentManager()
-                                .findFragmentById(R.id.mapView);
-                        mapFragment.getMapAsync(mapCallback);
-                    }catch(IllegalStateException e){
-                        e.getMessage();
-                    }
 
 
                     for(DataSnapshot d:dataChildren){
@@ -361,6 +354,14 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         Set<User> userSet = new HashSet<User>(FunHolder.getCurrentPrivateGroup().getUserList());
                         FunHolder.getCurrentPrivateGroup().getUserList().clear();
                         FunHolder.getCurrentPrivateGroup().getUserList().addAll(userSet);
+                    }
+
+                    try{
+                        mapFragment = (SupportMapFragment) getChildFragmentManager()
+                                .findFragmentById(R.id.mapView);
+                        mapFragment.getMapAsync(mapCallback);
+                    }catch(IllegalStateException e){
+                        e.getMessage();
                     }
 
                     if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>0){
@@ -545,7 +546,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             }
 
             if(MainActivity.isPublic){
-                for(User u:FunHolder.getCurrentPublicGroup().getUserList()){
+                for(User u:FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList())){
                     String s;
                     if(FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())> 5000){
                         s  = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())/1000 + "km";
@@ -559,7 +560,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                             .icon(u.getName().equals(MainActivity.user.getName()) ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
                 }
             }else{
-                for(User u:FunHolder.getCurrentPrivateGroup().getUserList()){
+                for(User u:FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList())){
                     String s;
                     if(FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())> 5000){
                         s  = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())/1000 + "km";

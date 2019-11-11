@@ -12,7 +12,9 @@ import com.example.stratelotek.ui.group.Message;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class FunHolder {
     public static void initInfo(){
@@ -137,6 +139,9 @@ public class FunHolder {
         l2.setLongitude(loc2.longitude);
         return (int)l1.distanceTo(l2);
     }
-
+    public static ArrayList<User> removeDuplicates(ArrayList<User> list){
+        Set<User> userSet = new HashSet<User>(list);
+        return new ArrayList<User>(userSet);
+    }
 
 }
