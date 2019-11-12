@@ -3,6 +3,9 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+
+import com.google.android.gms.ads.reward.RewardItem;
+import com.google.android.gms.ads.reward.RewardedVideoAdListener;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -45,6 +48,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.reward.RewardedVideoAd;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +63,7 @@ interface FirebaseCallbackPrivate{
     void onCallback(List<PrivateGroup> list);
 }
 
-final public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.ItemClickListener, LocationListener {
+final public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.ItemClickListener, LocationListener, RewardedVideoAdListener {
     static TextView informacje;
     static TextView wprowadzNick;
     static TextView typGrupy;
@@ -103,6 +110,8 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
     private ViewPager mViewPager;
 
+    private static RewardedVideoAd mRewardedVideoAd;
+
 
 
     @Override
@@ -112,6 +121,11 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
         context = getApplicationContext();
         listenerContext = this;
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        MobileAds.initialize(this, "ca-app-pub-2337287186342241/8409945040");
+        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(this);
+        mRewardedVideoAd.setRewardedVideoAdListener(this);
+        loadRewardedVideoAd();
 
         user = new User(currentUserName);
         database = FirebaseDatabase.getInstance();
@@ -358,9 +372,25 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                                 currentPrivateGroup.range = range;
                                                 currentPrivateGroup.locLat = user.getLatLng().latitude;
                                                 currentPrivateGroup.locLon = user.getLatLng().longitude;
-                                                currentId = addPrivateGroup(currentPrivateGroup);
-                                                isPublic = false;
-                                                changeActivity();
+                                                final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                                                builder.setMessage("Watch a short ad to create private group")
+                                                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                                            public void onClick(DialogInterface dialog, int id) {
+                                                                if (mRewardedVideoAd.isLoaded()) {
+                                                                    mRewardedVideoAd.show();
+                                                                }
+
+                                                            }
+                                                        })
+                                                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                                            public void onClick(DialogInterface dialog, int id) {
+
+                                                            }
+                                                        });
+                                                builder.create().show();
+//                                                currentId = addPrivateGroup(currentPrivateGroup);
+//                                                isPublic = false;
+//                                                changeActivity();
                                             }catch(SameGroupNameException e){
 
                                             }catch(BlankPasswordException e){
@@ -816,12 +846,80 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
     @Override
     protected void onResume(){
+        mRewardedVideoAd.resume(this);
         super.onResume();
         if(privateGroupsListener!=null && privateGroupsRef!=null)
             privateGroupsRef.addValueEventListener(privateGroupsListener);
         if(publicGroupsListener!=null && publicGroupsRef!=null)
             publicGroupsRef.addValueEventListener(publicGroupsListener);
     }
+
+    private void loadRewardedVideoAd() {
+        mRewardedVideoAd.loadAd("ca-app-pub-2337287186342241/8409945040",
+                new AdRequest.Builder().build());
+    }
+
+    @Override
+    public void onRewarded(RewardItem reward) {
+        currentId = addPrivateGroup(currentPrivateGroup);
+        isPublic = false;
+        changeActivity();
+        loadRewardedVideoAd();
+        //Toast.makeText(this, "onRewarded! currency: " + reward.getType() + "  amount: " +
+        //        reward.getAmount(), Toast.LENGTH_SHORT).show();
+        // Reward the user.
+    }
+
+    @Override
+    public void onRewardedVideoAdLeftApplication() {
+        //Toast.makeText(this, "onRewardedVideoAdLeftApplication",
+        //        Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRewardedVideoAdClosed() {
+        //Toast.makeText(this, "onRewardedVideoAdClosed", Toast.LENGTH_SHORT).show();
+        loadRewardedVideoAd();
+    }
+
+    @Override
+    public void onRewardedVideoAdFailedToLoad(int errorCode) {
+       // Toast.makeText(this, "onRewardedVideoAdFailedToLoad", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRewardedVideoAdLoaded() {
+        //Toast.makeText(this, "onRewardedVideoAdLoaded", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRewardedVideoAdOpened() {
+        //Toast.makeText(this, "onRewardedVideoAdOpened", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRewardedVideoStarted() {
+        //Toast.makeText(this, "onRewardedVideoStarted", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRewardedVideoCompleted() {
+        //Toast.makeText(this, "onRewardedVideoCompleted", Toast.LENGTH_SHORT).show();
+    }
+
+
+    @Override
+    public void onPause() {
+        mRewardedVideoAd.pause(this);
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        mRewardedVideoAd.destroy(this);
+        super.onDestroy();
+    }
+
 
 }
 

@@ -346,15 +346,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                             FunHolder.getCurrentPrivateGroup().getUserList().add(d.getValue(User.class));
                         }
                     }
-//                    if(MainActivity.isPublic){
-//                        ArrayList<User> userSet = FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
-//                        FunHolder.getCurrentPublicGroup().getUserList().clear();
-//                        FunHolder.getCurrentPublicGroup().getUserList().addAll(userSet);
-//                    }else{
-//                        ArrayList<User> userSet = FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
-//                        FunHolder.getCurrentPrivateGroup().getUserList().clear();
-//                        FunHolder.getCurrentPrivateGroup().getUserList().addAll(userSet);
-//                    }
 
                     try{
                         mapFragment = (SupportMapFragment) getChildFragmentManager()
@@ -644,23 +635,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         if(latLng != null && latLng.latitude != 0.0 && latLng.longitude != 0.0){
             MainActivity.user.setLocation(latLng);
         }
-//        if(MainActivity.isPublic){
-//            FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
-//        }else{
-//            FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
-//        }
-
-
-//                    if(MainActivity.isPublic){
-//                        FunHolder.getCurrentPublicGroup().userList = FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
-//                    }else{
-//                        FunHolder.getCurrentPrivateGroup().userList = FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
-//                    }
-//        if(MainActivity.isPublic){
-//            MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(FunHolder.getCurrentPublicGroup().getUserList());
-//        }else{
-//            MainActivity.myRef.child("private_groups").child(FunHolder.getCurrentPrivateGroup().getName()).child("userList").setValue(FunHolder.getCurrentPrivateGroup().getUserList());
-//        }
 
     }
 
@@ -771,7 +745,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
                     @Override
                     public void onPermissionGranted(PermissionGrantedResponse response) {
-                        Toast.makeText(GroupActivity.this, "Single permission is granted!", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(GroupActivity.this, "Single permission is granted!", Toast.LENGTH_SHORT).show();
                         isPermission = true;
                     }
 
