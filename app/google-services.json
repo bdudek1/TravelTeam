@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:373348611545:android:832b08b757beeae8",
         "android_client_info": {
-          "package_name": "com.example.stratelotek"
+          "package_name": "pl.travel.travelteam"
         }
       },
       "oauth_client": [
@@ -18,7 +18,7 @@
           "client_id": "373348611545-jd6h9aq02v8b81mif1vksb346epk8mnp.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.stratelotek",
+            "package_name": "pl.travel.travelteam",
             "certificate_hash": "a897678fcf36997161b7f552b58bac2d8815f0e7"
           }
         },
