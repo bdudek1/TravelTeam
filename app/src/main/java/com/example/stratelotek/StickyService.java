@@ -24,6 +24,7 @@ public class StickyService extends Service {
         }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>1){
             GroupActivity.msgsBuf.addAll(FunHolder.getCurrentPrivateGroup().messagesBuf);
         }
+
         if(MainActivity.isPublic){
             FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
             FunHolder.getCurrentPublicGroup().tryToDestroy();
@@ -31,6 +32,14 @@ public class StickyService extends Service {
             FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
             FunHolder.getCurrentPrivateGroup().tryToDestroy();
         }
+
+        if(MainActivity.isPublic){
+            FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
+        }else{
+            FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
+        }
+
+
         if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()<2){
             FunHolder.getCurrentPublicGroup().getUserList().clear();
         }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()<2){

@@ -346,15 +346,15 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                             FunHolder.getCurrentPrivateGroup().getUserList().add(d.getValue(User.class));
                         }
                     }
-                    if(MainActivity.isPublic){
-                        Set<User> userSet = new HashSet<User>(FunHolder.getCurrentPublicGroup().getUserList());
-                        FunHolder.getCurrentPublicGroup().getUserList().clear();
-                        FunHolder.getCurrentPublicGroup().getUserList().addAll(userSet);
-                    }else{
-                        Set<User> userSet = new HashSet<User>(FunHolder.getCurrentPrivateGroup().getUserList());
-                        FunHolder.getCurrentPrivateGroup().getUserList().clear();
-                        FunHolder.getCurrentPrivateGroup().getUserList().addAll(userSet);
-                    }
+//                    if(MainActivity.isPublic){
+//                        ArrayList<User> userSet = FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
+//                        FunHolder.getCurrentPublicGroup().getUserList().clear();
+//                        FunHolder.getCurrentPublicGroup().getUserList().addAll(userSet);
+//                    }else{
+//                        ArrayList<User> userSet = FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
+//                        FunHolder.getCurrentPrivateGroup().getUserList().clear();
+//                        FunHolder.getCurrentPrivateGroup().getUserList().addAll(userSet);
+//                    }
 
                     try{
                         mapFragment = (SupportMapFragment) getChildFragmentManager()
@@ -489,6 +489,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>0){
             msgsBuf.addAll(FunHolder.getCurrentPrivateGroup().messagesBuf);
         }
+
         if(MainActivity.isPublic){
             FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
             FunHolder.getCurrentPublicGroup().tryToDestroy();
@@ -496,6 +497,13 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
             FunHolder.getCurrentPrivateGroup().tryToDestroy();
         }
+
+        if(MainActivity.isPublic){
+            FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
+        }else{
+            FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
+        }
+
         if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()<2){
             FunHolder.getCurrentPublicGroup().getUserList().clear();
         }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()<2){
@@ -546,32 +554,50 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             }
 
             if(MainActivity.isPublic){
-                for(User u:FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList())){
+                for(User u:FunHolder.getCurrentPublicGroup().getUserList()){
                     String s;
                     if(FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())> 5000){
                         s  = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())/1000 + "km";
                     }else{
                         s = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng()) + "m";
                     }
-                    mMap.addMarker(new MarkerOptions()
-                            .position(u.getLatLng())
-                            .title(u.getName())
-                            .snippet(s)
-                            .icon(u.getName().equals(MainActivity.user.getName()) ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    if(u!=null && u.getName().equals(MainActivity.user.getName()) && FunHolder.getDistance(u.getLatLng(), MainActivity.user.getLatLng()) == 0){
+                        mMap.addMarker(new MarkerOptions()
+                                .position(u.getLatLng())
+                                .title(u.getName())
+                                .snippet(s)
+                                .icon(u.getName().equals(MainActivity.user.getName()) ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    }else if(u!=null && !u.getName().equals(MainActivity.user.getName())){
+                        mMap.addMarker(new MarkerOptions()
+                                .position(u.getLatLng())
+                                .title(u.getName())
+                                .snippet(s)
+                                .icon(u.getName().equals(MainActivity.user.getName()) ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    }
+
                 }
             }else{
-                for(User u:FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList())){
+                for(User u:FunHolder.getCurrentPrivateGroup().getUserList()){
                     String s;
                     if(FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())> 5000){
                         s  = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())/1000 + "km";
                     }else{
                         s = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng()) + "m";
                     }
-                    mMap.addMarker(new MarkerOptions()
-                            .position(u.getLatLng())
-                            .title(u.getName())
-                            .snippet(s)
-                            .icon(u.getName().equals(MainActivity.user.getName()) ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    if(u!=null && u.getName().equals(MainActivity.user.getName()) && FunHolder.getDistance(u.getLatLng(), MainActivity.user.getLatLng()) == 0){
+                        mMap.addMarker(new MarkerOptions()
+                                .position(u.getLatLng())
+                                .title(u.getName())
+                                .snippet(s)
+                                .icon(u.getName().equals(MainActivity.user.getName()) ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    }else if(u!=null && !u.getName().equals(MainActivity.user.getName())){
+                        mMap.addMarker(new MarkerOptions()
+                                .position(u.getLatLng())
+                                .title(u.getName())
+                                .snippet(s)
+                                .icon(u.getName().equals(MainActivity.user.getName()) ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    }
+
                 }
             }
 
@@ -618,6 +644,18 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         if(latLng != null && latLng.latitude != 0.0 && latLng.longitude != 0.0){
             MainActivity.user.setLocation(latLng);
         }
+//        if(MainActivity.isPublic){
+//            FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
+//        }else{
+//            FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
+//        }
+
+
+//                    if(MainActivity.isPublic){
+//                        FunHolder.getCurrentPublicGroup().userList = FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
+//                    }else{
+//                        FunHolder.getCurrentPrivateGroup().userList = FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
+//                    }
 //        if(MainActivity.isPublic){
 //            MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(FunHolder.getCurrentPublicGroup().getUserList());
 //        }else{

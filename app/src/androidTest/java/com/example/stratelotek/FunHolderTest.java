@@ -8,6 +8,8 @@ import com.google.android.gms.maps.model.LatLng;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
+
 import static androidx.test.InstrumentationRegistry.getContext;
 import static org.junit.Assert.*;
 
@@ -71,4 +73,34 @@ public class FunHolderTest {
         assertFalse(u1.equals(u3));
         assertFalse(u2.equals(u3));
     }
+
+//    @Test
+//    public void removeDuplicatesTest(){
+//        ArrayList<User> userList = new ArrayList<>();
+//        User u1 = new User("user1");
+//        u1.locLat = 50.0;
+//        u1.locLon = 50.0;
+//        User u2 = new User("user1");
+//        u1.locLat = 55.0;
+//        u1.locLon = 55.0;
+//        User u3 = new User("user3");
+//        u1.locLat = 60.0;
+//        u1.locLon = 60.0;
+//
+//        userList.add(u1);
+//        userList.add(u2);
+//        userList.add(u3);
+//
+//        userList = FunHolder.removeDuplicates(userList);
+//        assertEquals(2, userList.size());
+//        u2.setName("user2");
+//
+//        userList.clear();
+//
+//        userList.add(u1);
+//        userList.add(u2);
+//        userList.add(u3);
+//
+//        assertEquals(3, userList.size());
+//    }
 }
