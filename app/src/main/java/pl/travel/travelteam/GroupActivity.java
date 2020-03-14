@@ -337,9 +337,9 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
                     for(DataSnapshot d:dataChildren){
                         if(MainActivity.isPublic){
-                            FunHolder.getCurrentPublicGroup().getUserList().add(d.getValue(User.class));
+                            FunHolder.getCurrentPublicGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
                         }else{
-                            FunHolder.getCurrentPrivateGroup().getUserList().add(d.getValue(User.class));
+                            FunHolder.getCurrentPrivateGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
                         }
                     }
 
@@ -541,7 +541,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             }
 
             if(MainActivity.isPublic){
-                for(User u:FunHolder.getCurrentPublicGroup().getUserList()){
+                for(User u:FunHolder.getCurrentPublicGroup().getUserList().values()){
                     String s;
                     if(FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())> 5000){
                         s  = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())/1000 + "km";
@@ -564,7 +564,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
                 }
             }else{
-                for(User u:FunHolder.getCurrentPrivateGroup().getUserList()){
+                for(User u:FunHolder.getCurrentPrivateGroup().getUserList().values()){
                     String s;
                     if(FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())> 5000){
                         s  = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())/1000 + "km";

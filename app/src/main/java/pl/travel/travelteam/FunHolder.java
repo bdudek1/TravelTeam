@@ -134,29 +134,29 @@ public class FunHolder {
         l2.setLongitude(loc2.longitude);
         return (int)l1.distanceTo(l2);
     }
-    public static void removeDuplicates(ArrayList<User> list){
-        List<User> allUsers = list;
-        List<User> noRepeat = new ArrayList<User>();
-
-        for (User event : allUsers) {
-            boolean isFound = false;
-            for (User u : noRepeat) {
-                if (u.getName().equals(event.getName())) {
-                    isFound = true;
-                    break;
-                }
-            }
-            if (!isFound) noRepeat.add(event);
-        }
-        if(MainActivity.isPublic){
-            getCurrentPublicGroup().getUserList().clear();
-            getCurrentPublicGroup().getUserList().addAll(noRepeat);
-        }else{
-            getCurrentPrivateGroup().getUserList().clear();
-            getCurrentPrivateGroup().getUserList().addAll(noRepeat);
-        }
-        MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").setValue(noRepeat);
-        //return new ArrayList<User>(noRepeat);
-    }
+//    public static void removeDuplicates(ArrayList<User> list){
+//        List<User> allUsers = list;
+//        List<User> noRepeat = new ArrayList<User>();
+//
+//        for (User event : allUsers) {
+//            boolean isFound = false;
+//            for (User u : noRepeat) {
+//                if (u.getName().equals(event.getName())) {
+//                    isFound = true;
+//                    break;
+//                }
+//            }
+//            if (!isFound) noRepeat.add(event);
+//        }
+//        if(MainActivity.isPublic){
+//            getCurrentPublicGroup().getUserList().clear();
+//            getCurrentPublicGroup().getUserList().addAll(noRepeat);
+//        }else{
+//            getCurrentPrivateGroup().getUserList().clear();
+//            getCurrentPrivateGroup().getUserList().addAll(noRepeat);
+//        }
+//        MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").setValue(noRepeat);
+//        //return new ArrayList<User>(noRepeat);
+//    }
 
 }

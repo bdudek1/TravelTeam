@@ -8,7 +8,9 @@ import com.google.firebase.database.IgnoreExtraProperties;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 @IgnoreExtraProperties
 public class PublicGroup {
@@ -19,7 +21,7 @@ public class PublicGroup {
     private double locLon;
     private int range;
     private int messageCounter;
-    private Set<User> userList = new HashSet<>();
+    private Map<String, User> userList = new TreeMap<>();
     private ArrayList<Message> messages = new ArrayList<>();
 
     @Exclude
@@ -43,15 +45,19 @@ public class PublicGroup {
     public boolean addUser(User user) throws SameNameUserException{
         boolean isAdded = true;
         if(user != null){
-            for(User u:userList){
-                if(u != null && u.getName()!=null && u.getName().equals(user.getName()) && !userList.isEmpty()){
-                    isAdded = false;
-                    throw new SameNameUserException("User with same name is present in the group, please change your name.");
-                }
+            if(userList.containsValue(user)){
+                isAdded = false;
+                throw new SameNameUserException("User with same name is present in the group, please change your name.");
             }
+//            for(User u:userList.values()){
+//                if(u != null && u.getName()!=null && u.getName().equals(user.getName()) && !userList.isEmpty()){
+//                    isAdded = false;
+//                    throw new SameNameUserException("User with same name is present in the group, please change your name.");
+//                }
+//            }
             if(isAdded){
-                user.setUserNumber(userList.size());
-                userList.add(user);
+                user.setUserNumber(Integer.toString(userList.size()));
+                userList.putIfAbsent(user.getUserNumber(), user);
             }
         }else{
             isAdded = false;
@@ -61,7 +67,7 @@ public class PublicGroup {
     }
 
     public void removeUser(User user){
-        userList.removeIf(u -> u.equals(user));
+        userList.remove(user.getUserNumber(), user);
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("userList").setValue(userList);
     }
 
@@ -82,7 +88,7 @@ public class PublicGroup {
     }
 
     public void destroyGroup(){
-        userList.removeAll(userList);
+        userList.clear();
         messages.clear();
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(null);
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").setValue(messages);
@@ -93,7 +99,7 @@ public class PublicGroup {
 //
     public ArrayList<String> getUserNames(){
         ArrayList<String> list = new ArrayList<String>();
-        for(User u : userList){
+        for(User u : userList.values()){
             if(u!=null && u.getName() != null)
             list.add(u.getName());
         }
@@ -137,7 +143,7 @@ public class PublicGroup {
     }
 
 
-    public Set<User> getUserList(){
+    public Map<String, User> getUserList(){
         return userList;
     }
 

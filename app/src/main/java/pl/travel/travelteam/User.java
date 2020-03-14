@@ -11,15 +11,15 @@ public class User {
 
     User(){
     }
-    public int getUserNumber() {
+    public String getUserNumber() {
         return userNumber;
     }
 
-    public void setUserNumber(int userNumber) {
+    public void setUserNumber(String userNumber) {
         this.userNumber = userNumber;
     }
 
-    private int userNumber;
+    private String userNumber;
 
 
     private double locLat;
@@ -38,9 +38,9 @@ public class User {
         if(location.latitude != 0.0 && location.longitude != 0.0){
             this.locLat = location.latitude;
             this.locLon = location.longitude;
-            MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(Integer.toString(MainActivity.user.getUserNumber())).setValue(this);
-            MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(Integer.toString(MainActivity.user.getUserNumber())).child("locLat").setValue(locLat);
-            MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(Integer.toString(MainActivity.user.getUserNumber())).child("locLon").setValue(locLon);
+            MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(MainActivity.user.getUserNumber()).setValue(this);
+            MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(MainActivity.user.getUserNumber()).child("locLat").setValue(locLat);
+            MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(MainActivity.user.getUserNumber()).child("locLon").setValue(locLon);
         }
     }
     public LatLng getLatLng(){
@@ -86,7 +86,7 @@ public class User {
 
     @Override
     public int hashCode(){
-        return this.getUserNumber();
+        return Integer.valueOf(getUserNumber());
     }
     @Override
     public String toString(){

@@ -35,15 +35,15 @@ public class PrivateGroup extends PublicGroup {
     @Override
     public boolean addUser(User user) throws SameNameUserException{
         boolean isAdded = true;
-        for(User u:getUserList()){
+        for(User u:getUserList().values()){
             if(u != null && u.getName()!=null && u.getName().equals(user.getName()) && !getUserList().isEmpty()){
                 isAdded = false;
                 throw new SameNameUserException("User with same name is present in the group, please change your name.");
             }
         }
         if(isAdded){
-            user.setUserNumber(getUserList().size());
-            getUserList().add(user);
+            user.setUserNumber(Integer.toString(getUserList().size()));
+            getUserList().put(user.getUserNumber(), user);
             usersCounter++;
         }
         return isAdded;
@@ -55,7 +55,7 @@ public class PrivateGroup extends PublicGroup {
             isAdded = false;
             throw new WrongPasswordException("Wrong password.");
         }
-        for(User u:getUserList()){
+        for(User u:getUserList().values()){
             if(u != null && u.getName()!=null && u.getName().equals(user.getName()) && !getUserList().isEmpty()){
                 isAdded = false;
                 throw new SameNameUserException("User with same name is present in the group, please change your name.");
@@ -63,14 +63,14 @@ public class PrivateGroup extends PublicGroup {
         }
         if(isAdded){
             usersCounter++;
-            user.setUserNumber(getUserList().size());
-            getUserList().add(user);
+            user.setUserNumber(Integer.toString(getUserList().size()));
+            getUserList().put(user.getUserNumber(), user);
         }
         return isAdded;
     }
     @Override
     public void destroyGroup(){
-        getUserList().removeAll(getUserList());
+        getUserList().clear();
         getMessages().clear();
         MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messageCounter").setValue(null);
         MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("messages").setValue(getMessages());
@@ -83,7 +83,7 @@ public class PrivateGroup extends PublicGroup {
     @Override
     public ArrayList<String> getUserNames(){
         ArrayList<String> list = new ArrayList<String>();
-        for(User u : getUserList()){
+        for(User u : getUserList().values()){
             list.add(u.getName());
         }
         return list;
@@ -112,7 +112,7 @@ public class PrivateGroup extends PublicGroup {
 
     @Override
     public void removeUser(User user){
-        getUserList().removeIf(u -> u.equals(user));
+        getUserList().remove(user.getUserNumber(), user);
         MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("userList").setValue(getUserList());
     }
 }
