@@ -90,8 +90,9 @@ public class PublicGroup {
     public void destroyGroup(){
         userList.clear();
         messages.clear();
+        messagesBuf.clear();
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(null);
-        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").setValue(messages);
+        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").setValue(null);
         MainActivity.myRef.child("public_groups").child(getName()).setValue(null);
         publicGroupCounter--;
     }

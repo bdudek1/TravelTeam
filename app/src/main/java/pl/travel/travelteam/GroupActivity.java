@@ -336,11 +336,16 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
 
                     for(DataSnapshot d:dataChildren){
-                        if(MainActivity.isPublic){
-                            FunHolder.getCurrentPublicGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
-                        }else{
-                            FunHolder.getCurrentPrivateGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
+                        try{
+                            if(MainActivity.isPublic){
+                                FunHolder.getCurrentPublicGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
+                            }else{
+                                FunHolder.getCurrentPrivateGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
+                            }
+                        }catch(Exception e){
+                            e.getMessage();
                         }
+
                     }
 
                     try{
@@ -660,9 +665,11 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
     @Override
     protected void onStop() {
+        if(mGoogleApiClient!=null)
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
+
         if(usersListener!=null && userRef!=null)
         userRef.removeEventListener(usersListener);
         if(messageRef!=null && messagesListener!=null)

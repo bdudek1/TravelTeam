@@ -372,25 +372,9 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                                 currentPrivateGroup.setRange(range);
                                                 currentPrivateGroup.setLat(user.getLat());
                                                 currentPrivateGroup.setLon(user.getLon());
-                                                final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                                                builder.setMessage("Watch a short ad to create private group")
-                                                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                                                            public void onClick(DialogInterface dialog, int id) {
-                                                                if (mRewardedVideoAd.isLoaded()) {
-                                                                    mRewardedVideoAd.show();
-                                                                }
-
-                                                            }
-                                                        })
-                                                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                                            public void onClick(DialogInterface dialog, int id) {
-
-                                                            }
-                                                        });
-                                                builder.create().show();
-//                                                currentId = addPrivateGroup(currentPrivateGroup);
-//                                                isPublic = false;
-//                                                changeActivity();
+                                                currentId = addPrivateGroup(currentPrivateGroup);
+                                                isPublic = false;
+                                                changeActivity();
                                             }catch(SameGroupNameException e){
 
                                             }catch(BlankPasswordException e){
@@ -551,7 +535,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                     listaGrup.setVisibility(View.VISIBLE);
                     listaGrupPrywatnych.setVisibility(View.INVISIBLE);
                     listaGrup = rootView.findViewById(R.id.groupList);
-                    //publicGroupsInit();
+                    publicGroupsInit();
                     break;
                 }
                 case 3:{
