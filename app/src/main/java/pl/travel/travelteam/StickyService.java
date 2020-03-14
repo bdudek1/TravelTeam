@@ -33,11 +33,11 @@ public class StickyService extends Service {
             FunHolder.getCurrentPrivateGroup().tryToDestroy();
         }
 
-        if(MainActivity.isPublic){
-            FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
-        }else{
-            FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
-        }
+//        if(MainActivity.isPublic){
+//            FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
+//        }else{
+//            FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
+//        }
 
 
         if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()<2){

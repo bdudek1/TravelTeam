@@ -281,9 +281,9 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         spannableMessages.add(d.getValue(Message.class).toSpannableString());
                     }
                     if(MainActivity.isPublic){
-                        FunHolder.getCurrentPublicGroup().messageCounter = messages.size();
+                        FunHolder.getCurrentPublicGroup().setMessageCounter(messages.size());
                     }else{
-                        FunHolder.getCurrentPrivateGroup().messageCounter = messages.size();
+                        FunHolder.getCurrentPrivateGroup().setMessageCounter(messages.size());
                     }
 
                     if(messages.size()>0){
@@ -352,26 +352,26 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     }
 
                     if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>0){
-                        if(FunHolder.getCurrentPublicGroup().locLat == 0.0 || FunHolder.getCurrentPublicGroup().locLon == 0.0){
-                            FunHolder.getCurrentPublicGroup().setLatLng(new LatLng(FunHolder.getCurrentPublicGroup().getUserList().get(0).locLat, FunHolder.getCurrentPublicGroup().getUserList().get(0).locLon));
+                        if(FunHolder.getCurrentPublicGroup().getLat() == 0.0 || FunHolder.getCurrentPublicGroup().getLon() == 0.0){
+                            FunHolder.getCurrentPublicGroup().setLatLng(new LatLng(MainActivity.user.getLat(), MainActivity.user.getLon()));
                         }
-                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("locLat").setValue(FunHolder.getCurrentPublicGroup().getLocLat());
-                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("locLon").setValue(FunHolder.getCurrentPublicGroup().getLocLon());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("locLat").setValue(FunHolder.getCurrentPublicGroup().getLat());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("locLon").setValue(FunHolder.getCurrentPublicGroup().getLon());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("name").setValue(FunHolder.getCurrentPublicGroup().getName());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("groupId").setValue(FunHolder.getCurrentPublicGroup().getGroupId());
-                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("range").setValue(FunHolder.getCurrentPublicGroup().range);
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("range").setValue(FunHolder.getCurrentPublicGroup().getRange());
                         if(!MainActivity.publicGroupList.contains(FunHolder.getCurrentPublicGroup())){
                             MainActivity.publicGroupList.add(FunHolder.getCurrentPublicGroup());
                         }
                     }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>0){
-                        if(FunHolder.getCurrentPrivateGroup().locLat == 0){
-                            FunHolder.getCurrentPrivateGroup().setLatLng(FunHolder.getCurrentPrivateGroup().getUserList().get(0).getLatLng());
+                        if(FunHolder.getCurrentPrivateGroup().getLat() == 0.0 || FunHolder.getCurrentPrivateGroup().getLon() == 0.0){
+                            FunHolder.getCurrentPrivateGroup().setLatLng(new LatLng(MainActivity.user.getLat(), MainActivity.user.getLon()));
                         }
-                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("locLat").setValue(FunHolder.getCurrentPrivateGroup().getLocLat());
-                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("locLon").setValue(FunHolder.getCurrentPrivateGroup().getLocLon());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("locLat").setValue(FunHolder.getCurrentPrivateGroup().getLat());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("locLon").setValue(FunHolder.getCurrentPrivateGroup().getLon());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("name").setValue(FunHolder.getCurrentPrivateGroup().getName());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("groupId").setValue(FunHolder.getCurrentPrivateGroup().getGroupId());
-                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("range").setValue(FunHolder.getCurrentPrivateGroup().range);
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("range").setValue(FunHolder.getCurrentPrivateGroup().getRange());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("password").setValue(FunHolder.getCurrentPrivateGroup().getPassword());
                         if(!MainActivity.privateGroupList.contains(FunHolder.getCurrentPrivateGroup())){
                             MainActivity.privateGroupList.add(FunHolder.getCurrentPrivateGroup());
@@ -485,11 +485,11 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             FunHolder.getCurrentPrivateGroup().tryToDestroy();
         }
 
-        if(MainActivity.isPublic){
-            FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
-        }else{
-            FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
-        }
+//        if(MainActivity.isPublic){
+//            FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
+//        }else{
+//            FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
+//        }
 
         if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()<2){
             FunHolder.getCurrentPublicGroup().getUserList().clear();

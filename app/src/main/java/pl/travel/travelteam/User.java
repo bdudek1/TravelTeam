@@ -22,8 +22,8 @@ public class User {
     private int userNumber;
 
 
-    public double locLat;
-    public double locLon;
+    private double locLat;
+    private double locLon;
 
 
     public void setName(String name){
@@ -51,6 +51,22 @@ public class User {
         }
     }
 
+    public double getLat(){
+        try{
+            return new LatLng(locLat, locLon).latitude;
+        }catch (Exception e){
+            return new LatLng(1.1, 2.2).latitude;
+        }
+    }
+
+    public double getLon(){
+        try{
+            return new LatLng(locLat, locLon).longitude;
+        }catch (Exception e){
+            return new LatLng(1.1, 2.2).longitude;
+        }
+    }
+
 
     public User(String name){
         this.name = name;
@@ -66,6 +82,11 @@ public class User {
         }else{
             return false;
         }
+    }
+
+    @Override
+    public int hashCode(){
+        return this.getUserNumber();
     }
     @Override
     public String toString(){

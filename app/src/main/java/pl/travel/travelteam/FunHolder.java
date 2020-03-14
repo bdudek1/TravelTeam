@@ -96,7 +96,7 @@ public class FunHolder {
                 if(MainActivity.range == 0){
                     names.add(g.toStringRepresentation());
                 }else{
-                    if(MainActivity.range > getDistance(MainActivity.user.getLatLng(), new LatLng(g.getLocLat(), g.getLocLon()))){
+                    if(MainActivity.range > getDistance(MainActivity.user.getLatLng(), new LatLng(g.getLat(), g.getLon()))){
                         names.add(g.toStringRepresentation());
                     }
                 }
@@ -114,7 +114,7 @@ public class FunHolder {
                 if(MainActivity.range == 0){
                     names.add(g.toStringRepresentation());
                 }else{
-                    if(MainActivity.range > getDistance(MainActivity.user.getLatLng(), new LatLng(g.getLocLat(), g.getLocLon()))){
+                    if(MainActivity.range > getDistance(MainActivity.user.getLatLng(), new LatLng(g.getLat(), g.getLon()))){
                         names.add(g.toStringRepresentation());
                     };
                 }

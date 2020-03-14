@@ -6,19 +6,21 @@ import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @IgnoreExtraProperties
 public class PublicGroup {
     public static int publicGroupCounter = 0;
-    protected String name;
+    private String name;
     private String groupId;
-    public double locLat;
-    public double locLon;
-    public int range;
-    public int messageCounter;
-    public ArrayList<User> userList = new ArrayList<>();
-    public ArrayList<Message> messages = new ArrayList<>();
+    private double locLat;
+    private double locLon;
+    private int range;
+    private int messageCounter;
+    private Set<User> userList = new HashSet<>();
+    private ArrayList<Message> messages = new ArrayList<>();
 
     @Exclude
     public List<Message> messagesBuf = new ArrayList<>();
@@ -75,6 +77,10 @@ public class PublicGroup {
         return name;
     }
 
+    public void setName(String name){
+        this.name = name;
+    }
+
     public void destroyGroup(){
         userList.removeAll(userList);
         messages.clear();
@@ -84,9 +90,6 @@ public class PublicGroup {
         publicGroupCounter--;
     }
 
-    public ArrayList<User> getUserList(){
-        return userList;
-    }
 //
     public ArrayList<String> getUserNames(){
         ArrayList<String> list = new ArrayList<String>();
@@ -133,16 +136,48 @@ public class PublicGroup {
         return getName() + ", R:" + range + "km, D: " + FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(locLat, locLon))/1000 +"km";
     }
 
+
+    public Set<User> getUserList(){
+        return userList;
+    }
+
     public ArrayList<Message> getMessages(){
         return messages;
     }
 
+    public int getMessageCounter(){
+        return messageCounter;
+    }
 
-    public double getLocLat(){
+    public void setMessageCounter(int val){
+        messageCounter = val;
+    }
+
+    public void incrementMessageCounter(){
+        messageCounter++;
+    }
+
+    public int getRange(){
+        return range;
+    }
+
+    public void setRange(int range){
+        this.range = range;
+    }
+
+    public double getLat(){
         return locLat;
     }
 
-    public double getLocLon(){
+    public double getLon(){
         return locLon;
+    }
+
+    public void setLat(double lat){
+        this.locLat = lat;
+    }
+
+    public void setLon(double lon){
+        this.locLon = lon;
     }
 }

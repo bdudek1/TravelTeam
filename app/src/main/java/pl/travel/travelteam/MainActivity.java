@@ -343,9 +343,9 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                                 groupName = name.getText().toString();
                                                 currentPublicGroup = new PublicGroup(name.getText().toString());
                                                 currentPublicGroup.addUser(user);
-                                                currentPublicGroup.range = range;
-                                                currentPublicGroup.locLat = user.getLatLng().latitude;
-                                                currentPublicGroup.locLon = user.getLatLng().longitude;
+                                                currentPublicGroup.setRange(range);
+                                                currentPublicGroup.setLat(user.getLat());
+                                                currentPublicGroup.setLon(user.getLon());
                                                 currentId = addPublicGroup(currentPublicGroup);
                                                 isPublic = true;
                                                 changeActivity();
@@ -369,9 +369,9 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                                 groupName = name.getText().toString();
                                                 currentPrivateGroup = new PrivateGroup(name.getText().toString(), password.getText().toString());
                                                 currentPrivateGroup.addUser(user, currentPrivateGroup.getPassword());
-                                                currentPrivateGroup.range = range;
-                                                currentPrivateGroup.locLat = user.getLatLng().latitude;
-                                                currentPrivateGroup.locLon = user.getLatLng().longitude;
+                                                currentPrivateGroup.setRange(range);
+                                                currentPrivateGroup.setLat(user.getLat());
+                                                currentPrivateGroup.setLon(user.getLon());
                                                 final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                                                 builder.setMessage("Watch a short ad to create private group")
                                                         .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -581,7 +581,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
             for(PublicGroup g : publicGroupList){
                 try{
                     if(g != null && g.toStringRepresentation().equals(adapter.getItem(position))) {
-                        if(g.range > FunHolder.getDistance(user.getLatLng(), new LatLng(g.locLat, g.locLon)) || g.range == 0){
+                        if(g.getRange() > FunHolder.getDistance(user.getLatLng(), new LatLng(g.getLat(), g.getLon())) || g.getRange() == 0){
                             user.setName(userName.getText().toString());
                             groupName = g.getName();
                             currentId = g.getGroupId();
@@ -617,7 +617,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                             for(PrivateGroup g : privateGroupList){
                                     try{
                                         if(g != null && g.toStringRepresentation().equals(adapter.getItem(position))) {
-                                            if(g.range > FunHolder.getDistance(user.getLatLng(), new LatLng(g.locLat, g.locLon)) || g.range == 0){
+                                            if(g.getRange() > FunHolder.getDistance(user.getLatLng(), new LatLng(g.getLat(), g.getLon())) || g.getRange() == 0){
                                                 user.setName(userName.getText().toString());
                                                 groupName = g.getName();
                                                 currentId = g.getGroupId();
