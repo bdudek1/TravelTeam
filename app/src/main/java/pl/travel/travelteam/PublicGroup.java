@@ -6,13 +6,11 @@ import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
-
+@IgnoreExtraProperties
 public class PublicGroup {
     public static int publicGroupCounter = 0;
     private String name = "default";
@@ -94,11 +92,11 @@ public class PublicGroup {
         messagesBuf.clear();
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(0);
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").setValue(messages);
-        MainActivity.myRef.child("public_groups").child(getName()).setValue(null);
+        MainActivity.myRef.child("public_groups").child(getName()).setValue(this);
         publicGroupCounter--;
     }
 
-//
+    @Exclude
     public ArrayList<String> getUserNames(){
         ArrayList<String> list = new ArrayList<String>();
         for(User u : userList.values()){
@@ -134,6 +132,7 @@ public class PublicGroup {
         this.locLon = loc.longitude;
     }
 
+    @Exclude
     public LatLng getLatLng(){
         try{
             return new LatLng(locLat, locLon);
@@ -181,18 +180,22 @@ public class PublicGroup {
         this.range = range;
     }
 
+    @Exclude
     public double getLat(){
         return locLat;
     }
 
+    @Exclude
     public double getLon(){
         return locLon;
     }
 
+    @Exclude
     public void setLat(double lat){
         this.locLat = lat;
     }
 
+    @Exclude
     public void setLon(double lon){
         this.locLon = lon;
     }

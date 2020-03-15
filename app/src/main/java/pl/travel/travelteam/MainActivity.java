@@ -168,6 +168,8 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
         });
         publicGroupsRef = database.getReference("public_groups");
         privateGroupsRef = database.getReference("private_groups");
+        publicGroupsRef.keepSynced(false);
+        privateGroupsRef.keepSynced(false);
         try{
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         }catch(SecurityException e){
