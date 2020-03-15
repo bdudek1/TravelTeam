@@ -54,13 +54,15 @@ import com.google.android.gms.ads.reward.RewardedVideoAd;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 interface FirebaseCallback{
-    void onCallback(List<PublicGroup> list);
+    void onCallback(Map<Integer, PublicGroup> list);
 }
 
 interface FirebaseCallbackPrivate{
-    void onCallback(List<PrivateGroup> list);
+    void onCallback(Map<Integer, PrivateGroup> list);
 }
 
 final public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.ItemClickListener, LocationListener, RewardedVideoAdListener {
@@ -79,8 +81,8 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
     private static RecyclerViewAdapter.ItemClickListener listenerContext;
     private static RecyclerViewAdapter adapter;
     private static RecyclerViewAdapter adapterPrywatnych;
-    static List<PublicGroup> publicGroupList = new ArrayList<>();
-    static List<PrivateGroup> privateGroupList = new ArrayList<>();
+    static Map<Integer, PublicGroup> publicGroupList = new TreeMap<>();
+    static Map<Integer, PrivateGroup> privateGroupList = new TreeMap<>();
     static String groupName;
     private static String currentId;
     static boolean isPublic;
@@ -368,7 +370,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                                 user.setName(userName.getText().toString());
                                                 groupName = name.getText().toString();
                                                 currentPrivateGroup = new PrivateGroup(name.getText().toString(), password.getText().toString());
-                                                currentPrivateGroup.addUser(user, currentPrivateGroup.getPassword());
+                                                //currentPrivateGroup.addUser(user, currentPrivateGroup.getPassword());
                                                 currentPrivateGroup.setRange(range);
                                                 currentPrivateGroup.setLat(user.getLat());
                                                 currentPrivateGroup.setLon(user.getLon());
@@ -413,7 +415,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                             case 2:{
                                 getPublicGroups(new FirebaseCallback() {
                                     @Override
-                                    public void onCallback(List<PublicGroup> list) {
+                                    public void onCallback(Map<Integer, PublicGroup> list) {
 
                                     }
                                 });
@@ -430,7 +432,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                             case 3:{
                                 getPrivateGroups(new FirebaseCallbackPrivate() {
                                     @Override
-                                    public void onCallback(List<PrivateGroup> list) {
+                                    public void onCallback(Map<Integer, PrivateGroup> list) {
 
                                     }
                                 });
@@ -562,7 +564,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
     @Override
     public void onItemClick(View view, int position) {
         if(isInPublicSection){
-            for(PublicGroup g : publicGroupList){
+            for(PublicGroup g : publicGroupList.values()){
                 try{
                     if(g != null && g.toStringRepresentation().equals(adapter.getItem(position))) {
                         if(g.getRange() > FunHolder.getDistance(user.getLatLng(), new LatLng(g.getLat(), g.getLon())) || g.getRange() == 0){
@@ -598,7 +600,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                         public void onClick(DialogInterface dialog, int id) {
                             Dialog dialogView = (Dialog) dialog;
                             EditText password=(EditText)dialogView.findViewById(R.id.passwordEntry);
-                            for(PrivateGroup g : privateGroupList){
+                            for(PrivateGroup g : privateGroupList.values()){
                                     try{
                                         if(g != null && g.toStringRepresentation().equals(adapter.getItem(position))) {
                                             if(g.getRange() > FunHolder.getDistance(user.getLatLng(), new LatLng(g.getLat(), g.getLon())) || g.getRange() == 0){
@@ -643,7 +645,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
     private static void publicGroupsInit(){
         listaGrup.setLayoutManager(new LinearLayoutManager(context));
-        publicGroupList.removeIf(x -> x.equals("null null"));
+        //publicGroupList.removeIf(x -> x.equals("null null"));
     }
 
     private static void privateGroupsInit(){
@@ -687,7 +689,8 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
     }
 
     private static String addPublicGroup(PublicGroup g){
-        publicGroupList.add(g);
+        System.out.println("addPublicGroup gname: " + g.getName());
+        publicGroupList.put(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()), g);
         myRef.child("public_groups").child(g.getName()).setValue(g).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -703,7 +706,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
 
     private static String addPrivateGroup(PrivateGroup g){
-        privateGroupList.add(g);
+        privateGroupList.put(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()), g);
         myRef.child("private_groups").child(g.getName()).setValue(g).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -722,16 +725,20 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Iterable<DataSnapshot> dataChildren = dataSnapshot.getChildren();
-                //publicGroupList.clear();
+                publicGroupList.clear();
                 for(DataSnapshot d:dataChildren){
                     try{
                         PublicGroup g = d.getValue(PublicGroup.class);
-                        publicGroupList.add(g);
+                        //if(g.getName()!=null)
+                        publicGroupList.put(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()), g);
+                        System.out.println("MAct, gListSize: " + publicGroupList.values().size());
+                        System.out.println("MAct, gName: " + g.getName());
                     }catch(DatabaseException e){
                         e.getMessage();
                     }
 
                 }
+                System.out.println("MAct, getPublicGroups: " + publicGroupList);
                 firebaseCallback.onCallback(publicGroupList);
                 publicGroupsInit();
 
@@ -756,7 +763,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                 for(DataSnapshot d:dataChildren){
                     try{
                         PrivateGroup g = d.getValue(PrivateGroup.class);
-                        privateGroupList.add(g);
+                        privateGroupList.put(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()), g);
                     }catch(DatabaseException e){
                         e.getMessage();
                     }

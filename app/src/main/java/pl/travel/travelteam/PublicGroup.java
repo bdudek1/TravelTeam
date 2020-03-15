@@ -12,10 +12,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-@IgnoreExtraProperties
+
 public class PublicGroup {
     public static int publicGroupCounter = 0;
-    private String name;
+    private String name = "default";
     private String groupId;
     private double locLat;
     private double locLon;
@@ -29,7 +29,7 @@ public class PublicGroup {
 
 
     public PublicGroup(String name) throws BlankNameException{
-        if(name.equals("")){
+        if(name.equals("") || name == null){
             throw new BlankNameException("Please enter the group name.");
         }
         this.name = name;
@@ -49,15 +49,16 @@ public class PublicGroup {
                 isAdded = false;
                 throw new SameNameUserException("User with same name is present in the group, please change your name.");
             }
-//            for(User u:userList.values()){
-//                if(u != null && u.getName()!=null && u.getName().equals(user.getName()) && !userList.isEmpty()){
-//                    isAdded = false;
-//                    throw new SameNameUserException("User with same name is present in the group, please change your name.");
-//                }
-//            }
+            for(User u:userList.values()){
+                if(u != null && u.getName()!=null && u.getName().equals(user.getName()) && !userList.isEmpty()){
+                    isAdded = false;
+                    throw new SameNameUserException("User with same name is present in the group, please change your name.");
+                }
+            }
             if(isAdded){
                 user.setUserNumber(Integer.toString(userList.size()));
                 userList.putIfAbsent(user.getUserNumber(), user);
+                MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userList);
             }
         }else{
             isAdded = false;
@@ -68,7 +69,7 @@ public class PublicGroup {
 
     public void removeUser(User user){
         userList.remove(user.getUserNumber(), user);
-        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("userList").setValue(userList);
+        MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userList);
     }
 
     public boolean tryToDestroy(){
@@ -91,8 +92,8 @@ public class PublicGroup {
         userList.clear();
         messages.clear();
         messagesBuf.clear();
-        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(null);
-        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").setValue(null);
+        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(0);
+        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").setValue(messages);
         MainActivity.myRef.child("public_groups").child(getName()).setValue(null);
         publicGroupCounter--;
     }
@@ -131,6 +132,14 @@ public class PublicGroup {
     public void setLatLng(LatLng loc){
         this.locLat = loc.latitude;
         this.locLon = loc.longitude;
+    }
+
+    public LatLng getLatLng(){
+        try{
+            return new LatLng(locLat, locLon);
+        }catch (Exception e){
+            return new LatLng(1.1, 2.2);
+        }
     }
 
 

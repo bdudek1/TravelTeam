@@ -113,6 +113,6 @@ public class PrivateGroup extends PublicGroup {
     @Override
     public void removeUser(User user){
         getUserList().remove(user.getUserNumber(), user);
-        MainActivity.myRef.child("private_groups").child(MainActivity.groupName).child("userList").setValue(getUserList());
+        MainActivity.myRef.child("private_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(getUserList());
     }
 }

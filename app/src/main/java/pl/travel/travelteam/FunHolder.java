@@ -91,17 +91,17 @@ public class FunHolder {
 
     public static List<String> getPublicGroupNames(){
         List<String> names = new ArrayList<>();
-        for(PublicGroup g: MainActivity.publicGroupList){
-            if(g.getName()!= "" && g.getName() != null){
-                if(MainActivity.range == 0){
-                    names.add(g.toStringRepresentation());
-                }else{
-                    if(MainActivity.range > getDistance(MainActivity.user.getLatLng(), new LatLng(g.getLat(), g.getLon()))){
-                        names.add(g.toStringRepresentation());
-                    }
-                }
-            }
-
+        for(PublicGroup g: MainActivity.publicGroupList.values()){
+//            if(g.getName()!= "" && g.getName() != null){
+//                if(MainActivity.range == 0){
+//                    names.add(g.toStringRepresentation());
+//                }else{
+//                    if(MainActivity.range > getDistance(MainActivity.user.getLatLng(), new LatLng(g.getLat(), g.getLon()))){
+//                        names.add(g.toStringRepresentation());
+//                    }
+//                }
+//            }
+            names.add(g.toStringRepresentation());
 
         }
         System.out.println("FunHolder names: " + names);
@@ -110,7 +110,7 @@ public class FunHolder {
 
     public static List<String> getPrivateGroupNames(){
         List<String> names = new ArrayList<>();
-        for(PrivateGroup g: MainActivity.privateGroupList){
+        for(PrivateGroup g: MainActivity.privateGroupList.values()){
             if(g.getName()!= "" && g.getName() != null){
                 if(MainActivity.range == 0){
                     names.add(g.toStringRepresentation());

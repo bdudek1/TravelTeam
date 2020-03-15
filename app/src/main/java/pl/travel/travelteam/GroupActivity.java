@@ -365,9 +365,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("name").setValue(FunHolder.getCurrentPublicGroup().getName());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("groupId").setValue(FunHolder.getCurrentPublicGroup().getGroupId());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("range").setValue(FunHolder.getCurrentPublicGroup().getRange());
-                        if(!MainActivity.publicGroupList.contains(FunHolder.getCurrentPublicGroup())){
-                            MainActivity.publicGroupList.add(FunHolder.getCurrentPublicGroup());
-                        }
+                        MainActivity.publicGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPublicGroup().getLatLng()), FunHolder.getCurrentPublicGroup());
                     }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>0){
                         if(FunHolder.getCurrentPrivateGroup().getLat() == 0.0 || FunHolder.getCurrentPrivateGroup().getLon() == 0.0){
                             FunHolder.getCurrentPrivateGroup().setLatLng(new LatLng(MainActivity.user.getLat(), MainActivity.user.getLon()));
@@ -378,9 +376,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("groupId").setValue(FunHolder.getCurrentPrivateGroup().getGroupId());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("range").setValue(FunHolder.getCurrentPrivateGroup().getRange());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("password").setValue(FunHolder.getCurrentPrivateGroup().getPassword());
-                        if(!MainActivity.privateGroupList.contains(FunHolder.getCurrentPrivateGroup())){
-                            MainActivity.privateGroupList.add(FunHolder.getCurrentPrivateGroup());
-                        }
+                        MainActivity.privateGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPrivateGroup().getLatLng()), FunHolder.getCurrentPrivateGroup());
                     }
 
 
@@ -506,6 +502,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         if(GroupActivity.messageRef!=null && GroupActivity.messagesListener!=null)
             GroupActivity.messageRef.removeEventListener(GroupActivity.messagesListener);
         MainActivity.user.setName(MainActivity.user.getName());
+
         super.onBackPressed();
 
     }
@@ -779,11 +776,11 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     public void onDestroy(){
         if(MainActivity.isPublic){
             FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
-            FunHolder.getCurrentPublicGroup().tryToDestroy();
+            if(!FunHolder.getCurrentPublicGroup().tryToDestroy());
             FunHolder.getCurrentPublicGroup().addMessages(msgsBuf);
         }else{
             FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
-            FunHolder.getCurrentPrivateGroup().tryToDestroy();
+            if(!FunHolder.getCurrentPrivateGroup().tryToDestroy());
             FunHolder.getCurrentPrivateGroup().addMessages(msgsBuf);
         }
         super.onDestroy();
