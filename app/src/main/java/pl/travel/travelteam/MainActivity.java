@@ -96,7 +96,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
     private static DatabaseReference publicGroupsRef;
     private static DatabaseReference privateGroupsRef;
 
-    private static List<String> groupsList = new ArrayList<>();
+    //private static List<String> groupsList = new ArrayList<>();
 
     private static LocationManager locationManager;
 
@@ -417,14 +417,14 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
                                     }
                                 });
+                                publicGroupsInit();
                                 listaGrup = rootView.findViewById(R.id.groupList);
-
                                 adapter = new RecyclerViewAdapter(context, FunHolder.getPublicGroupNames());
+                                System.out.println("MainActivity szukajDruzyny: " + FunHolder.getPublicGroupNames());
                                 adapter.setClickListener(listenerContext);
                                 adapter.notifyDataSetChanged();
                                 listaGrup.setAdapter(adapter);
                                 listaGrup.invalidate();
-                                publicGroupsInit();
                                 break;
                             }
                             case 3:{
@@ -434,13 +434,13 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
                                     }
                                 });
+                                privateGroupsInit();
                                 listaGrupPrywatnych = rootView.findViewById(R.id.privateGroupList);
                                 adapter = new RecyclerViewAdapter(context, FunHolder.getPrivateGroupNames());
                                 adapter.setClickListener(listenerContext);
                                 adapter.notifyDataSetChanged();
                                 listaGrup.setAdapter(adapter);
                                 listaGrup.invalidate();
-                                privateGroupsInit();
                                 break;
                             }
                         }
@@ -722,8 +722,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Iterable<DataSnapshot> dataChildren = dataSnapshot.getChildren();
-                groupsList.clear();
-                publicGroupList.clear();
+                //publicGroupList.clear();
                 for(DataSnapshot d:dataChildren){
                     try{
                         PublicGroup g = d.getValue(PublicGroup.class);
@@ -753,7 +752,6 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Iterable<DataSnapshot> dataChildren = dataSnapshot.getChildren();
-                groupsList.clear();
                 privateGroupList.clear();
                 for(DataSnapshot d:dataChildren){
                     try{

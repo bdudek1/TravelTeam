@@ -104,6 +104,7 @@ public class FunHolder {
 
 
         }
+        System.out.println("FunHolder names: " + names);
         return names;
     }
 
