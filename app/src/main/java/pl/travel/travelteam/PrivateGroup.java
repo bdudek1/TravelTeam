@@ -21,8 +21,8 @@ public class PrivateGroup extends PublicGroup {
             throw new BlankPasswordException("Please fill the password field.");
         }
         this.setName(name);
-        privateGroupCounter++;
-        groupId = Integer.toString(privateGroupCounter);
+        //privateGroupCounter++;
+        //groupId = Integer.toString(privateGroupCounter);
         this.password = password;
     }
     PrivateGroup(){

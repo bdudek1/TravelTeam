@@ -11,10 +11,10 @@ import java.util.Map;
 import java.util.TreeMap;
 
 @IgnoreExtraProperties
-public class PublicGroup {
-    public static int publicGroupCounter = 0;
+public class PublicGroup implements Comparable<PublicGroup> {
+    //public static int publicGroupCounter = 0;
     private String name = "default";
-    private String groupId;
+    //private String groupId;
     private double locLat;
     private double locLon;
     private int range;
@@ -32,8 +32,8 @@ public class PublicGroup {
         }
         this.name = name;
         messageCounter = 0;
-        publicGroupCounter++;
-        groupId = Integer.toString(publicGroupCounter);
+        //publicGroupCounter++;
+        //groupId = Integer.toString(publicGroupCounter);
     }
 
     PublicGroup(){
@@ -93,7 +93,7 @@ public class PublicGroup {
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(0);
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").setValue(messages);
         MainActivity.myRef.child("public_groups").child(getName()).setValue(this);
-        publicGroupCounter--;
+        //publicGroupCounter--;
     }
 
     @Exclude
@@ -107,9 +107,9 @@ public class PublicGroup {
     }
 
 
-    public String getGroupId(){
-        return groupId;
-    }
+//    public String getGroupId(){
+//        return groupId;
+//    }
 
     public void addMessage(Message message){
         MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(messageCounter);
@@ -142,10 +142,10 @@ public class PublicGroup {
     }
 
 
-    @Override
-    public String toString(){
-        return getGroupId() + " " + getName();
-    }
+//    @Override
+//    public String toString(){
+//        return getGroupId() + " " + getName();
+//    }
 
     public String toStringRepresentation(){
         return getName() + ", R:" + range + "km, D: " + FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(locLat, locLon))/1000 +"km";
@@ -199,4 +199,10 @@ public class PublicGroup {
     public void setLon(double lon){
         this.locLon = lon;
     }
+
+    @Override
+    public int compareTo(PublicGroup g){
+        return FunHolder.getDistance(MainActivity.user.getLatLng(), this.getLatLng()) - FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng());
+    }
+
 }

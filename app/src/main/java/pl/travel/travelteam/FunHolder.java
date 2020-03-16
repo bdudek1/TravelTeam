@@ -10,6 +10,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class FunHolder {
     public static void initInfo(){
@@ -91,18 +92,10 @@ public class FunHolder {
 
     public static List<String> getPublicGroupNames(){
         List<String> names = new ArrayList<>();
-        for(PublicGroup g: MainActivity.publicGroupList.values()){
-//            if(g.getName()!= "" && g.getName() != null){
-//                if(MainActivity.range == 0){
-//                    names.add(g.toStringRepresentation());
-//                }else{
-//                    if(MainActivity.range > getDistance(MainActivity.user.getLatLng(), new LatLng(g.getLat(), g.getLon()))){
-//                        names.add(g.toStringRepresentation());
-//                    }
-//                }
-//            }
-            names.add(g.toStringRepresentation());
-
+        for(Set<PublicGroup> gSet: MainActivity.publicGroupList.values()){
+            for(PublicGroup g:gSet){
+                names.add(g.toStringRepresentation());
+            }
         }
         System.out.println("FunHolder names: " + names);
         return names;

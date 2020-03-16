@@ -64,6 +64,7 @@ import com.karumi.dexter.listener.single.PermissionListener;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.TreeSet;
 
 import static pl.travel.travelteam.MainActivity.database;
 
@@ -363,9 +364,10 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("locLat").setValue(FunHolder.getCurrentPublicGroup().getLat());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("locLon").setValue(FunHolder.getCurrentPublicGroup().getLon());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("name").setValue(FunHolder.getCurrentPublicGroup().getName());
-                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("groupId").setValue(FunHolder.getCurrentPublicGroup().getGroupId());
+                        //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("groupId").setValue(FunHolder.getCurrentPublicGroup().getGroupId());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("range").setValue(FunHolder.getCurrentPublicGroup().getRange());
-                        MainActivity.publicGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPublicGroup().getLatLng()), FunHolder.getCurrentPublicGroup());
+                        MainActivity.publicGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPublicGroup().getLatLng()), new TreeSet<PublicGroup>());
+                        MainActivity.publicGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPublicGroup().getLatLng())).add(FunHolder.getCurrentPublicGroup());
                     }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>0){
                         if(FunHolder.getCurrentPrivateGroup().getLat() == 0.0 || FunHolder.getCurrentPrivateGroup().getLon() == 0.0){
                             FunHolder.getCurrentPrivateGroup().setLatLng(new LatLng(MainActivity.user.getLat(), MainActivity.user.getLon()));
@@ -373,7 +375,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("locLat").setValue(FunHolder.getCurrentPrivateGroup().getLat());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("locLon").setValue(FunHolder.getCurrentPrivateGroup().getLon());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("name").setValue(FunHolder.getCurrentPrivateGroup().getName());
-                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("groupId").setValue(FunHolder.getCurrentPrivateGroup().getGroupId());
+                        //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("groupId").setValue(FunHolder.getCurrentPrivateGroup().getGroupId());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("range").setValue(FunHolder.getCurrentPrivateGroup().getRange());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("password").setValue(FunHolder.getCurrentPrivateGroup().getPassword());
                         MainActivity.privateGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPrivateGroup().getLatLng()), FunHolder.getCurrentPrivateGroup());

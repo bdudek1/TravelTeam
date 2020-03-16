@@ -18,6 +18,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -53,12 +54,16 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.reward.RewardedVideoAd;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 interface FirebaseCallback{
-    void onCallback(Map<Integer, PublicGroup> list);
+    void onCallback(Map<Integer, Set<PublicGroup>> list);
 }
 
 interface FirebaseCallbackPrivate{
@@ -81,10 +86,10 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
     private static RecyclerViewAdapter.ItemClickListener listenerContext;
     private static RecyclerViewAdapter adapter;
     private static RecyclerViewAdapter adapterPrywatnych;
-    static Map<Integer, PublicGroup> publicGroupList = new TreeMap<>();
+    static Map<Integer, Set<PublicGroup>> publicGroupList = new TreeMap<>();
     static Map<Integer, PrivateGroup> privateGroupList = new TreeMap<>();
     static String groupName;
-    private static String currentId;
+    //private static String currentId;
     static boolean isPublic;
     private static boolean isInPublicSection = false;
     public static User user;
@@ -350,7 +355,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                                 currentPublicGroup.setRange(range);
                                                 currentPublicGroup.setLat(user.getLat());
                                                 currentPublicGroup.setLon(user.getLon());
-                                                currentId = addPublicGroup(currentPublicGroup);
+                                                //currentId = addPublicGroup(currentPublicGroup);
                                                 isPublic = true;
                                                 changeActivity();
                                             }catch(SameGroupNameException e){
@@ -376,7 +381,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                                 currentPrivateGroup.setRange(range);
                                                 currentPrivateGroup.setLat(user.getLat());
                                                 currentPrivateGroup.setLon(user.getLon());
-                                                currentId = addPrivateGroup(currentPrivateGroup);
+                                                //currentId = addPrivateGroup(currentPrivateGroup);
                                                 isPublic = false;
                                                 changeActivity();
                                             }catch(SameGroupNameException e){
@@ -417,7 +422,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                             case 2:{
                                 getPublicGroups(new FirebaseCallback() {
                                     @Override
-                                    public void onCallback(Map<Integer, PublicGroup> list) {
+                                    public void onCallback(Map<Integer, Set<PublicGroup>> list) {
 
                                     }
                                 });
@@ -566,33 +571,32 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
     @Override
     public void onItemClick(View view, int position) {
         if(isInPublicSection){
-            for(PublicGroup g : publicGroupList.values()){
-                try{
-                    if(g != null && g.toStringRepresentation().equals(adapter.getItem(position))) {
-                        if(g.getRange() > FunHolder.getDistance(user.getLatLng(), new LatLng(g.getLat(), g.getLon())) || g.getRange() == 0){
-                            user.setName(userName.getText().toString());
-                            groupName = g.getName();
-                            currentId = g.getGroupId();
-                            if (g.addUser(user)) {
-                                isPublic = true;
-                                currentPublicGroup = g;
-                                changeActivity();
+            for(Set<PublicGroup> gSet : publicGroupList.values()){
+                for(PublicGroup g:gSet){
+                    try{
+                        if(g != null && g.toStringRepresentation().equals(adapter.getItem(position))) {
+                            if(g.getRange() > FunHolder.getDistance(user.getLatLng(), new LatLng(g.getLat(), g.getLon())) || g.getRange() == 0){
+                                user.setName(userName.getText().toString());
+                                groupName = g.getName();
+                                //currentId = g.getGroupId();
+                                if (g.addUser(user)) {
+                                    isPublic = true;
+                                    currentPublicGroup = g;
+                                    changeActivity();
+                                }
+                            }else{
+                                Toast.makeText(this, "The group is too far away!", Toast.LENGTH_SHORT).show();
                             }
-                        }else{
-                            Toast.makeText(this, "The group is too far away!", Toast.LENGTH_SHORT).show();
                         }
 
-                }
-
                     }catch (IndexOutOfBoundsException e){
-                    Toast.makeText(this, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
                         e.getMessage();
                     }catch (SameNameUserException e){
-                    Toast.makeText(MainActivity.context, "User with same name is present in the group, please change your name", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.context, "User with same name is present in the group, please change your name", Toast.LENGTH_LONG).show();
                         e.getMessage();
-                  }
-
-
+                    }
+                }
             }
         }else{
             privateGroupsInit();
@@ -608,7 +612,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                             if(g.getRange() > FunHolder.getDistance(user.getLatLng(), new LatLng(g.getLat(), g.getLon())) || g.getRange() == 0){
                                                 user.setName(userName.getText().toString());
                                                 groupName = g.getName();
-                                                currentId = g.getGroupId();
+                                                //currentId = g.getGroupId();
                                                 if (g.addUser(user, password.getText().toString())) {
                                                     isPublic = false;
                                                     currentPrivateGroup = g;
@@ -690,24 +694,29 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
         }
     }
 
-    private static String addPublicGroup(PublicGroup g){
+    private static void addPublicGroup(PublicGroup g){
         System.out.println("addPublicGroup gname: " + g.getName());
-        publicGroupList.put(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()), g);
-        myRef.child("public_groups").child(g.getName()).setValue(g).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-            }
-        })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                    }
-                });
-        return g.getGroupId();
+        publicGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()), new TreeSet<PublicGroup>());
+        if(publicGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng())).add(g)){
+            myRef.child("public_groups").child(g.getName()).setValue(g).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                }
+            })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                        }
+                    });
+        }else{
+            //GROUP EXISTS EXCEPTION
+        }
+
+
     }
 
 
-    private static String addPrivateGroup(PrivateGroup g){
+    private static void addPrivateGroup(PrivateGroup g){
         privateGroupList.put(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()), g);
         myRef.child("private_groups").child(g.getName()).setValue(g).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -719,7 +728,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                     public void onFailure(@NonNull Exception e) {
                     }
                 });
-        return g.getGroupId();
+
     }
 
     private static void getPublicGroups(FirebaseCallback firebaseCallback){
@@ -732,7 +741,8 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                     try{
                         PublicGroup g = d.getValue(PublicGroup.class);
                         //if(g.getName()!=null)
-                        publicGroupList.put(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()), g);
+                        publicGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()), new TreeSet<PublicGroup>());
+                        publicGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng())).add(g);
                         System.out.println("MAct, gListSize: " + publicGroupList.values().size());
                         System.out.println("MAct, gName: " + g.getName());
                     }catch(DatabaseException e){
@@ -852,7 +862,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
     @Override
     public void onRewarded(RewardItem reward) {
-        currentId = addPrivateGroup(currentPrivateGroup);
+        //currentId = addPrivateGroup(currentPrivateGroup);
         isPublic = false;
         changeActivity();
         loadRewardedVideoAd();
