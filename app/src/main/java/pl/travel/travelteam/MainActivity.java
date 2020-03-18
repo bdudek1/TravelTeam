@@ -592,32 +592,49 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
     @Override
     public void onItemClick(View view, int position) {
         if(isInPublicSection){
-            for(Set<PublicGroup> gSet : publicGroupList.values()){
-                for(PublicGroup g:gSet){
-                    try{
-                        if(g != null && g.toStringRepresentation().equals(adapter.getItem(position))) {
-                            if(g.getRange() > FunHolder.getDistance(user.getLatLng(), new LatLng(g.getLat(), g.getLon())) || g.getRange() == 0){
-                                user.setName(userName.getText().toString());
-                                groupName = g.getName();
-                                //currentId = g.getGroupId();
-                                if (g.addUser(user)) {
-                                    isPublic = true;
-                                    currentPublicGroup = g;
-                                    changeActivity();
-                                }
-                            }else{
-                                Toast.makeText(this, "The group is too far away!", Toast.LENGTH_SHORT).show();
-                            }
+            for(Integer key : publicGroupList.keySet()){
+                if(key < range || range == 0){
+                    Iterator<PublicGroup> iterator = publicGroupList.get(key).iterator();
+                    //skomentowac powyzsze(znacznik)
+                    Iterator it = publicGroupList.entrySet().iterator();
+                    while(it.hasNext()){
+                        Map.Entry pairs = (Map.Entry) it.next();
+                        System.out.println("entrySet class : " + ((HashMap)pairs.getValue()).values().getClass());
+                        for(Object g:((HashMap)pairs.getValue()).values()){
+                            System.out.println(g.getClass());
+                            System.out.println(g.toString());
+                            //z tych wartosci stworzyc nowych userow,
+                            //nowe userlisty i nowa grupe
                         }
 
-                    }catch (IndexOutOfBoundsException e){
-                        Toast.makeText(this, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
-                        e.getMessage();
-                    }catch (SameNameUserException e){
-                        Toast.makeText(MainActivity.context, "User with same name is present in the group, please change your name", Toast.LENGTH_LONG).show();
-                        e.getMessage();
                     }
+//                    for(PublicGroup g:publicGroupList.get(key)){
+//                        try{
+//                            if(g != null && g.toStringRepresentation().equals(adapter.getItem(position))) {
+//                                    user.setName(userName.getText().toString());
+//                                    groupName = g.getName();
+//                                    //currentId = g.getGroupId();
+//                                    if (g.addUser(user)) {
+//                                        isPublic = true;
+//                                        currentPublicGroup = g;
+//                                        changeActivity();
+//                                    }
+//                            }
+//                        }catch (IndexOutOfBoundsException e){
+//                            Toast.makeText(this, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
+//                            e.getMessage();
+//                        }catch (SameNameUserException e){
+//                            Toast.makeText(MainActivity.context, "User with same name is present in the group, please change your name", Toast.LENGTH_LONG).show();
+//                            e.getMessage();
+//                        }catch (Exception e){
+//                            Toast.makeText(this, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
+//                            e.getMessage();
+//                        }
+//                    }
+                }else{
+                    Toast.makeText(this, "The group is too far away!", Toast.LENGTH_SHORT).show();
                 }
+
             }
         }else{
             privateGroupsInit();
@@ -651,8 +668,9 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                         Toast.makeText(MainActivity.context, "Wrong password, please try again",
                                                 Toast.LENGTH_LONG).show();
 
-                                    }catch (IndexOutOfBoundsException e){
+                                    }catch (Exception e){
                                         Toast.makeText(getApplicationContext(), "Please refresh the group list.", Toast.LENGTH_SHORT).show();
+                                        e.getMessage();
                                     }
 
                             }
@@ -808,7 +826,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                     distance = (Long)g;
                                     System.out.println("Long: " + (Long) g);
                                 }
-                                if(g instanceof String){
+                                if(g instanceof String && (distance == 0 || distance < range)){
                                     buf.add(g.toString() + ", " + distance + " km away");
                                 }
                             }

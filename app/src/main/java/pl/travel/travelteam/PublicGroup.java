@@ -183,7 +183,7 @@ public class PublicGroup implements Comparable<PublicGroup> {
 //    }
 
     public String toStringRepresentation(){
-        return getName() + ", R:" + range + "km, D: " + FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(locLat, locLon))/1000 +"km";
+        return getName() + ", " + FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(getLat(), getLon())) + " km away";
     }
 
 
