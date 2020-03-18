@@ -2,13 +2,17 @@ package pl.travel.travelteam;
 
 import pl.travel.travelteam.group.Message;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 @IgnoreExtraProperties
 public class PublicGroup implements Comparable<PublicGroup> {
@@ -53,8 +57,8 @@ public class PublicGroup implements Comparable<PublicGroup> {
                     throw new SameNameUserException("User with same name is present in the group, please change your name.");
                 }
             }
-            if(isAdded){
-                user.setUserNumber(Integer.toString(userList.size()));
+            if(isAdded && FunHolder.getCurrentPublicGroup()!=null){
+                user.setUserNumber(Integer.toString(userList.size()+1));
                 userList.putIfAbsent(user.getUserNumber(), user);
                 MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userList);
             }
@@ -67,6 +71,9 @@ public class PublicGroup implements Comparable<PublicGroup> {
 
     public void removeUser(User user){
         userList.remove(user.getUserNumber(), user);
+        for(User u:userList.values()){
+            u.setUserNumber(Integer.toString(Integer.valueOf(u.getUserNumber()) - 1));
+        }
         MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userList);
     }
 
@@ -90,9 +97,18 @@ public class PublicGroup implements Comparable<PublicGroup> {
         userList.clear();
         messages.clear();
         messagesBuf.clear();
-        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(0);
-        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").setValue(messages);
-        MainActivity.myRef.child("public_groups").child(getName()).setValue(this);
+
+//        Set<PublicGroup> gSet = MainActivity.publicGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPublicGroup().getLatLng()));
+//        if(gSet!=null)
+//        for(PublicGroup g:gSet){
+//            if(g.equals(this)){
+//                gSet.remove(g);
+//            }
+//        }
+
+        MainActivity.myRef.child("public_groups").child(getName()).child("messageCounter").removeValue();
+        MainActivity.myRef.child("public_groups").child(getName()).child("messages").removeValue();
+        MainActivity.myRef.child("public_groups").child(getName()).removeValue();
         //publicGroupCounter--;
     }
 
@@ -102,6 +118,16 @@ public class PublicGroup implements Comparable<PublicGroup> {
         for(User u : userList.values()){
             if(u!=null && u.getName() != null)
             list.add(u.getName());
+        }
+        return list;
+    }
+
+    @Exclude
+    public ArrayList<String> getUserRepresentations(){
+        ArrayList<String> list = new ArrayList<String>();
+        for(User u : userList.values()){
+            if(u!=null && u.getName() != null)
+                list.add(u.toStringRepresentation());
         }
         return list;
     }
@@ -141,6 +167,15 @@ public class PublicGroup implements Comparable<PublicGroup> {
         }
     }
 
+    @Override
+    public boolean equals(Object o){
+        if(!(o instanceof PublicGroup)){
+            return false;
+        }else{
+            PublicGroup g = (PublicGroup) o;
+            return this.getName().equals(g.getName()) && this.getLatLng().equals(g.getLatLng());
+        }
+    }
 
 //    @Override
 //    public String toString(){

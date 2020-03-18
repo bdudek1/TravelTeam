@@ -38,7 +38,9 @@ public class User {
         if(location.latitude != 0.0 && location.longitude != 0.0){
             this.locLat = location.latitude;
             this.locLon = location.longitude;
-            MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(MainActivity.user.getUserNumber()).setValue(this);
+
+            if(location!=null)
+            MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(MainActivity.user.getUserNumber()).setValue(this);
             //MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(MainActivity.user.getUserNumber()).child("locLat").setValue(locLat);
             //MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(MainActivity.user.getUserNumber()).child("locLon").setValue(locLon);
         }
@@ -91,6 +93,10 @@ public class User {
     @Override
     public String toString(){
         return name;
+    }
+
+    public String toStringRepresentation(){
+        return getUserNumber() +" "+ getName();
     }
 
 

@@ -9,8 +9,18 @@ import android.widget.FrameLayout;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
+
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 public class FunHolder {
     public static void initInfo(){
@@ -91,14 +101,16 @@ public class FunHolder {
     }
 
     public static List<String> getPublicGroupNames(){
-        List<String> names = new ArrayList<>();
-        for(Set<PublicGroup> gSet: MainActivity.publicGroupList.values()){
-            for(PublicGroup g:gSet){
-                names.add(g.toStringRepresentation());
-            }
+        List<String> buf = new ArrayList<>();
+        try{
+            //MainActivity.executorService = Executors.newSingleThreadExecutor();
+            buf = MainActivity.futureNames.get();
+            MainActivity.executorService.shutdown();
+            return buf;
+        }catch(ExecutionException | InterruptedException | NullPointerException e){
+            System.out.println(e.getMessage());
+            return buf;
         }
-        System.out.println("FunHolder names: " + names);
-        return names;
     }
 
     public static List<String> getPrivateGroupNames(){

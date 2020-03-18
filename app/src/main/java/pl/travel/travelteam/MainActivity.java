@@ -55,12 +55,24 @@ import com.google.android.gms.ads.reward.RewardedVideoAd;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 interface FirebaseCallback{
     void onCallback(Map<Integer, Set<PublicGroup>> list);
@@ -68,6 +80,10 @@ interface FirebaseCallback{
 
 interface FirebaseCallbackPrivate{
     void onCallback(Map<Integer, PrivateGroup> list);
+}
+
+interface NamesHolder extends Callable {
+
 }
 
 final public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.ItemClickListener, LocationListener, RewardedVideoAdListener {
@@ -118,6 +134,9 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
     private ViewPager mViewPager;
 
     private static RewardedVideoAd mRewardedVideoAd;
+
+    public static ExecutorService executorService;
+    public static Future<List<String>> futureNames;
 
 
 
@@ -352,6 +371,8 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                                 groupName = name.getText().toString();
                                                 currentPublicGroup = new PublicGroup(name.getText().toString());
                                                 currentPublicGroup.addUser(user);
+                                                currentPublicGroup.addUser(new User("KUZYN"));
+                                                currentPublicGroup.addUser(new User("KUZYN2"));
                                                 currentPublicGroup.setRange(range);
                                                 currentPublicGroup.setLat(user.getLat());
                                                 currentPublicGroup.setLon(user.getLon());
@@ -736,21 +757,65 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Iterable<DataSnapshot> dataChildren = dataSnapshot.getChildren();
-                publicGroupList.clear();
-                for(DataSnapshot d:dataChildren){
-                    try{
-                        PublicGroup g = d.getValue(PublicGroup.class);
-                        //if(g.getName()!=null)
-                        publicGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()), new TreeSet<PublicGroup>());
-                        publicGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng())).add(g);
-                        System.out.println("MAct, gListSize: " + publicGroupList.values().size());
-                        System.out.println("MAct, gName: " + g.getName());
-                    }catch(DatabaseException e){
-                        e.getMessage();
-                    }
+                Map<String, Set<PublicGroup>> dataMap = (HashMap<String, Set<PublicGroup>>)dataSnapshot.getValue();
 
+                Consumer<PublicGroup> pGroupAdder = a -> publicGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), a.getLatLng())).add(a);
+                publicGroupList.clear();
+
+                Iterator<Set<PublicGroup>> iterator = dataMap.values().iterator();
+                Iterator it = dataMap.entrySet().iterator();
+                double latBuf = 0;
+                double lonBuf = 0;
+                while(it.hasNext()){
+                    Map.Entry pairs = (Map.Entry) it.next();
+                    //System.out.println("entrySet class : " + ((HashMap)pairs.getValue()).values().getClass());
+                    for(Object g:((HashMap)pairs.getValue()).values()){
+                            boolean switchLoc = false;
+                            //System.out.println(g.getClass());
+                            if(g instanceof Double){
+                                if(!switchLoc){
+                                    latBuf = (Double)g;
+                                    switchLoc = true;
+                                }else{
+                                    lonBuf = (Double)g;
+                                }
+                            }
+                    }
+                    publicGroupList.put(FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(latBuf, lonBuf)), iterator.next());
                 }
-                System.out.println("MAct, getPublicGroups: " + publicGroupList);
+
+                while(iterator.hasNext()){
+
+                    //publicGroupList.put(11, iterator.next());
+                }
+
+                executorService = Executors.newSingleThreadExecutor();
+                    futureNames = executorService.submit(new NamesHolder(){
+                        @Override
+                        public List<String> call(){
+                            Set<PublicGroup> setBuf = new HashSet<>();
+                            List<String> buf =  new ArrayList<>();
+                            Iterator it = publicGroupList.entrySet().iterator();
+                            while (it.hasNext()) {
+                                Map.Entry pairs = (Map.Entry) it.next();
+
+                                setBuf.addAll(((HashMap)pairs.getValue()).values());
+                            }
+                            Long distance = 2L;
+                            for(Object g:setBuf){
+                                System.out.println("Class: " + g.getClass());
+                                if(g instanceof java.lang.Long){
+                                    distance = (Long)g;
+                                    System.out.println("Long: " + (Long) g);
+                                }
+                                if(g instanceof String){
+                                    buf.add(g.toString() + ", " + distance + " km away");
+                                }
+                            }
+                            return buf;
+                        }
+                    });
+                    System.out.println("publicGroupList : " + publicGroupList);
                 firebaseCallback.onCallback(publicGroupList);
                 publicGroupsInit();
 

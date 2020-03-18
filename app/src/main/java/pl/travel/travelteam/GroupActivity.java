@@ -239,9 +239,9 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             adapterChat = new RecyclerViewAdapterChat(context, new ArrayList<SpannableString>());
             LinkedHashSet<String> hashSet;
             if(MainActivity.isPublic){
-                hashSet = new LinkedHashSet<>(FunHolder.getCurrentPublicGroup().getUserNames());
+                hashSet = new LinkedHashSet<>(FunHolder.getCurrentPublicGroup().getUserRepresentations());
             }else{
-                hashSet = new LinkedHashSet<>(FunHolder.getCurrentPrivateGroup().getUserNames());
+                hashSet = new LinkedHashSet<>(FunHolder.getCurrentPrivateGroup().getUserRepresentations());
             }
 
             ArrayList<String> listWithoutDuplicates = new ArrayList<>(hashSet);
@@ -385,9 +385,9 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     try{
                         LinkedHashSet<String> hashSet;
                         if(MainActivity.isPublic){
-                            hashSet = new LinkedHashSet<>(FunHolder.getCurrentPublicGroup().getUserNames());
+                            hashSet = new LinkedHashSet<>(FunHolder.getCurrentPublicGroup().getUserRepresentations());
                         }else{
-                            hashSet = new LinkedHashSet<>(FunHolder.getCurrentPrivateGroup().getUserNames());
+                            hashSet = new LinkedHashSet<>(FunHolder.getCurrentPrivateGroup().getUserRepresentations());
                         }
 
 
@@ -474,11 +474,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     }
     @Override
     public void onBackPressed() {
-        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>0){
-            msgsBuf.addAll(FunHolder.getCurrentPublicGroup().messagesBuf);
-        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>0){
-            msgsBuf.addAll(FunHolder.getCurrentPrivateGroup().messagesBuf);
-        }
 
         if(MainActivity.isPublic){
             FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
@@ -488,23 +483,29 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             FunHolder.getCurrentPrivateGroup().tryToDestroy();
         }
 
+        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>0){
+            msgsBuf.addAll(FunHolder.getCurrentPublicGroup().messagesBuf);
+        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>0){
+            msgsBuf.addAll(FunHolder.getCurrentPrivateGroup().messagesBuf);
+        }
+
 //        if(MainActivity.isPublic){
 //            FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
 //        }else{
 //            FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
 //        }
 
-        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()<2){
-            FunHolder.getCurrentPublicGroup().getUserList().clear();
-        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()<2){
-            FunHolder.getCurrentPrivateGroup().getUserList().clear();
-        }
+//        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()<2){
+//            FunHolder.getCurrentPublicGroup().getUserList().clear();
+//        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()<2){
+//            FunHolder.getCurrentPrivateGroup().getUserList().clear();
+//        }
         if(GroupActivity.usersListener!=null && GroupActivity.userRef!=null)
             GroupActivity.userRef.removeEventListener(GroupActivity.usersListener);
         if(GroupActivity.messageRef!=null && GroupActivity.messagesListener!=null)
             GroupActivity.messageRef.removeEventListener(GroupActivity.messagesListener);
-        MainActivity.user.setName(MainActivity.user.getName());
 
+        //MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).removeValue();
         super.onBackPressed();
 
     }
