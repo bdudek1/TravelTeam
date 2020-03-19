@@ -116,6 +116,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
     static PrivateGroup currentPrivateGroup;
     static TextView userName;
     static String currentUserName = "User";
+    static int distBuf = 0;
 
     static public FirebaseDatabase database;
     static public DatabaseReference myRef;
@@ -128,7 +129,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
 
     private Location currentLoc;
-    static int range;
+    static int range = 0;
     private static ValueEventListener publicGroupsListener;
     private static ValueEventListener privateGroupsListener;
 
@@ -805,13 +806,14 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                 }
                             }
                     }
-                    publicGroupList.put(FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(latBuf, lonBuf)), iterator.next());
+                    distBuf = FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(latBuf, lonBuf));
+                    publicGroupList.put(distBuf, iterator.next());
                 }
 
-                while(iterator.hasNext()){
-
-                    //publicGroupList.put(11, iterator.next());
-                }
+//                while(iterator.hasNext()){
+//
+//                    //publicGroupList.put(11, iterator.next());
+//                }
 
                 executorService = Executors.newSingleThreadExecutor();
                     futureNames = executorService.submit(new NamesHolder(){
@@ -825,22 +827,23 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
                                 setBuf.addAll(((HashMap)pairs.getValue()).values());
                             }
-                            Long distance = 2L;
+                            Long rangeGroup = 2L;
                             Long messagesCounter = 0L;
                             boolean gotMessages = false;
                             for(Object g:setBuf){
                                 System.out.println("Class: " + g.getClass());
                                 if(g instanceof java.lang.Long){
                                     if(!gotMessages){
-                                        distance = (Long) g;
+                                        rangeGroup = (Long) g;
+                                        System.out.println("RANGE = " + rangeGroup);
                                         gotMessages = true;
                                     }else{
                                         messagesCounter = (Long) g;
                                     }
                                     System.out.println("Long: " + (Long) g);
                                 }
-                                if(g instanceof String && (range == 0 || distance < range)){
-                                    buf.add(g.toString() + ", " + distance + " km away");
+                                if(g instanceof String && (range == 0 || distBuf < range)){
+                                    buf.add(g.toString() + ", " + distBuf + " km away");
                                 }
                             }
                             System.out.println("messagesCounter = " + messagesCounter);
