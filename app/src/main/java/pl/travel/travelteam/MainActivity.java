@@ -56,11 +56,14 @@ import com.google.android.gms.ads.reward.RewardedVideoAd;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -594,19 +597,22 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
         if(isInPublicSection){
             for(Integer key : publicGroupList.keySet()){
                 if(key < range || range == 0){
-                    Iterator<PublicGroup> iterator = publicGroupList.get(key).iterator();
+                    //Iterator<PublicGroup> iterator = publicGroupList.get(key).iterator();
                     //skomentowac powyzsze(znacznik)
                     Iterator it = publicGroupList.entrySet().iterator();
                     while(it.hasNext()){
                         Map.Entry pairs = (Map.Entry) it.next();
-                        System.out.println("entrySet class : " + ((HashMap)pairs.getValue()).values().getClass());
+                        //System.out.println("entrySet class : " + ((HashMap)pairs.getValue()).values().getClass());
+                        Queue<Object> toFactoryObjects = new LinkedList<>();
                         for(Object g:((HashMap)pairs.getValue()).values()){
+                            toFactoryObjects.add(g);
+                            //System.out.println("queue size : " + toFactoryObjects.size());
                             System.out.println(g.getClass());
                             System.out.println(g.toString());
                             //z tych wartosci stworzyc nowych userow,
                             //nowe userlisty i nowa grupe
                         }
-
+                        GroupFactory.getGroup(toFactoryObjects);
                     }
 //                    for(PublicGroup g:publicGroupList.get(key)){
 //                        try{
@@ -820,16 +826,24 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                 setBuf.addAll(((HashMap)pairs.getValue()).values());
                             }
                             Long distance = 2L;
+                            Long messagesCounter = 0L;
+                            boolean gotMessages = false;
                             for(Object g:setBuf){
                                 System.out.println("Class: " + g.getClass());
                                 if(g instanceof java.lang.Long){
-                                    distance = (Long)g;
+                                    if(!gotMessages){
+                                        distance = (Long) g;
+                                        gotMessages = true;
+                                    }else{
+                                        messagesCounter = (Long) g;
+                                    }
                                     System.out.println("Long: " + (Long) g);
                                 }
-                                if(g instanceof String && (distance == 0 || distance < range)){
+                                if(g instanceof String && (range == 0 || distance < range)){
                                     buf.add(g.toString() + ", " + distance + " km away");
                                 }
                             }
+                            System.out.println("messagesCounter = " + messagesCounter);
                             return buf;
                         }
                     });
