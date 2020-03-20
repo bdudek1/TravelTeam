@@ -23,6 +23,7 @@ public class PublicGroup implements Comparable<PublicGroup> {
     private double locLon;
     private Long range;
     private int messageCounter;
+    private short userSizeBuf = 0;
     private Map<String, User> userList = new TreeMap<>();
     private ArrayList<Message> messages = new ArrayList<>();
 
@@ -60,7 +61,13 @@ public class PublicGroup implements Comparable<PublicGroup> {
             if(isAdded && FunHolder.getCurrentPublicGroup()!=null){
                 user.setUserNumber(Integer.toString(userList.size()+1));
                 userList.putIfAbsent(user.getUserNumber(), user);
+//                if(userSizeBuf != userList.size()){
                 MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userList);
+//                    System.out.println("USER SIZE BUF = " + userSizeBuf);
+//                    System.out.println("USER LIST SIZE =  " + userList.size());
+//                    userSizeBuf = (short)(userList.size()+1);
+//                }
+
             }
         }else{
             isAdded = false;
@@ -132,14 +139,19 @@ public class PublicGroup implements Comparable<PublicGroup> {
         return list;
     }
 
+    @Exclude
+    public void setUserList(Map<String, User> userList){
+        this.userList = userList;
+    }
+
 
 //    public String getGroupId(){
 //        return groupId;
 //    }
 
     public void addMessage(Message message){
-        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messageCounter").setValue(messageCounter);
-        MainActivity.myRef.child("public_groups").child(MainActivity.groupName).child("messages").child(Integer.toString(messageCounter)).setValue(message);
+        MainActivity.myRef.child("public_groups").child(getName()).child("messageCounter").setValue(messageCounter);
+        MainActivity.myRef.child("public_groups").child(getName()).child("messages").child(Integer.toString(messageCounter)).setValue(message);
     }
 
     public  void addMessages(List<Message> msgs){
@@ -237,7 +249,12 @@ public class PublicGroup implements Comparable<PublicGroup> {
 
     @Override
     public int compareTo(PublicGroup g){
-        return (FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()) - g.getRange().intValue() - FunHolder.getDistance(MainActivity.user.getLatLng(), this.getLatLng()));
+        try{
+            return (FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()) - g.getRange().intValue() - FunHolder.getDistance(MainActivity.user.getLatLng(), this.getLatLng()));
+        }catch(Exception e){
+            return 1;
+        }
+
     }
 
 }

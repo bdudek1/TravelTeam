@@ -4,6 +4,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,11 +45,13 @@ public class GroupFactory {
                                 if(user!=null && gotUsers == false){
                                     HashMap<String, Object> map = (HashMap)user;
                                     User u = new User((String)map.get("name"));
-                                    u.setLocation(new LatLng(Double.valueOf((Long)map.get("lat")), Double.valueOf((Long)map.get("lon"))));
+                                    //u.setLocation(new LatLng((double)map.get("lat"), (double)map.get("lon")));
+                                    //System.out.println("MAP LAT CLASS = " + ((Long)map.get("lat")).getClass());
+                                    //System.out.println("MAP LAT VALUE = " + (Double)map.get("lat"));
                                     u.setUserNumber((String)map.get("userNumber"));
                                     userList.add(u);
                                 }
-                                //System.out.println("userList = " + userList);
+                                System.out.println("userList = " + userList);
 
                             }
                             gotUsers = true;
@@ -56,7 +59,7 @@ public class GroupFactory {
                             for(Object message:(ArrayList)o){
                                 //System.out.println("Message = " + message);
                                 if(message!=null)
-                                    System.out.println(message.getClass());
+                                    System.out.println(message);
                                 HashMap<String, Object> messageMap = (HashMap)message;
                                 messageList.add((String)messageMap.get("text"));
                             }
@@ -76,9 +79,14 @@ public class GroupFactory {
                     //System.out.println("Factory value: " + o);
 
                 }
+                Map<String, User> userListBuf = new TreeMap<String, User>();
+                for(User u:userList){
+                    userListBuf.put(u.getUserNumber(), u);
+                }
                 pGroup.setName(name);
                 messageList.forEach(a -> pGroup.addMessage(new Message(a)));
-                userList.forEach(a -> pGroup.addUser(a));
+                //userList.forEach(a -> pGroup.addUser(a));
+                pGroup.setUserList(userListBuf);
                 pGroup.setLat(lat);
                 pGroup.setLon(lon);
                 pGroup.setLatLng(new LatLng(lat, lon));
@@ -92,5 +100,11 @@ public class GroupFactory {
             }
         }
         return pGroup;
+    }
+
+    public static double getDouble(Long l){
+        Object o = (Object)l;
+        Double dValue = ((Number)o).doubleValue();
+        return dValue;
     }
 }

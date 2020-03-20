@@ -787,9 +787,40 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
                 Consumer<PublicGroup> pGroupAdder = a -> publicGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), a.getLatLng())).add(a);
                 publicGroupList.clear();
+                Iterator<Set<PublicGroup>> iterator;
+                if(dataMap!=null){
+                    iterator = dataMap.values().iterator();
+                }else{
+                    iterator = new Iterator<Set<PublicGroup>>() {
+                        @Override
+                        public boolean hasNext() {
+                            return false;
+                        }
 
-                Iterator<Set<PublicGroup>> iterator = dataMap.values().iterator();
-                Iterator it = dataMap.entrySet().iterator();
+                        @Override
+                        public Set<PublicGroup> next() {
+                            return null;
+                        }
+                    };
+                }
+
+                Iterator it;
+                if(dataMap!=null){
+                    it = dataMap.entrySet().iterator();
+                }else{
+                    it = new Iterator() {
+                        @Override
+                        public boolean hasNext() {
+                            return false;
+                        }
+
+                        @Override
+                        public Object next() {
+                            return null;
+                        }
+                    };
+                }
+
                 double latBuf = 0;
                 double lonBuf = 0;
                 while(it.hasNext()){
@@ -824,6 +855,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                         //System.out.println("GROUP PAREMETERS SIZE = " + groupParameters.size());
                         //System.out.println("GROUP FACTORY OUTPUT = " + GroupFactory.getGroup(groupParametersBuf));
                         setBuf.add(GroupFactory.getGroup(groupParameters));
+                        System.out.println("/////////////BUG/////////////////");
                         //System.out.println("SET BUF = " + setBuf);
 //                        if(publicGroupList.containsKey(distBuf)){
 //                            System.out.println("PUBLIC GROUP LIST BEFORE = " + publicGroupList);

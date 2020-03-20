@@ -6,7 +6,7 @@ import com.google.firebase.database.IgnoreExtraProperties;
 
 
 @IgnoreExtraProperties
-public class User {
+public class User implements Comparable<User>{
     private String name;
 
     User(){
@@ -39,7 +39,7 @@ public class User {
             this.locLat = location.latitude;
             this.locLon = location.longitude;
 
-            if(location!=null)
+            if(location!=null && FunHolder.getCurrentPublicGroup()!=null)
             MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(MainActivity.user.getUserNumber()).setValue(this);
             //MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(MainActivity.user.getUserNumber()).child("locLat").setValue(locLat);
             //MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(MainActivity.user.getUserNumber()).child("locLon").setValue(locLon);
@@ -99,6 +99,10 @@ public class User {
         return getUserNumber() +" "+ getName();
     }
 
+    @Override
+    public int compareTo(User u){
+        return Integer.valueOf(getUserNumber()) - Integer.valueOf(u.getUserNumber());
+    }
 
 
 }
