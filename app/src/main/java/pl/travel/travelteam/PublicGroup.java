@@ -21,7 +21,7 @@ public class PublicGroup implements Comparable<PublicGroup> {
     //private String groupId;
     private double locLat;
     private double locLon;
-    private int range;
+    private Long range;
     private int messageCounter;
     private Map<String, User> userList = new TreeMap<>();
     private ArrayList<Message> messages = new ArrayList<>();
@@ -177,10 +177,10 @@ public class PublicGroup implements Comparable<PublicGroup> {
         }
     }
 
-//    @Override
-//    public String toString(){
-//        return getGroupId() + " " + getName();
-//    }
+    @Override
+    public String toString(){
+        return getName() +", range = " + getRange();
+    }
 
     public String toStringRepresentation(){
         return getName() + ", " + FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(getLat(), getLon())) + " km away";
@@ -207,11 +207,11 @@ public class PublicGroup implements Comparable<PublicGroup> {
         messageCounter++;
     }
 
-    public int getRange(){
+    public Long getRange(){
         return range;
     }
 
-    public void setRange(int range){
+    public void setRange(Long range){
         this.range = range;
     }
 
@@ -237,7 +237,7 @@ public class PublicGroup implements Comparable<PublicGroup> {
 
     @Override
     public int compareTo(PublicGroup g){
-        return FunHolder.getDistance(MainActivity.user.getLatLng(), this.getLatLng()) - FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng());
+        return (FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()) - g.getRange().intValue() - FunHolder.getDistance(MainActivity.user.getLatLng(), this.getLatLng()));
     }
 
 }

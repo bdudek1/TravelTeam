@@ -129,7 +129,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
 
     private Location currentLoc;
-    static int range = 0;
+    static Long range = 0L;
     private static ValueEventListener publicGroupsListener;
     private static ValueEventListener privateGroupsListener;
 
@@ -330,7 +330,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                     if(seekBar.getProgress() == 0){
                         dokladnosc.setText("No range limit");
                     }
-                    range = progress;
+                    range = Integer.toUnsignedLong(progress);
                 }
 
                 public void onStartTrackingTouch(SeekBar seekBar) {
@@ -338,7 +338,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                     if(seekBar.getProgress() == 0){
                         dokladnosc.setText("No range limit");
                     }
-                    range = seekBar.getProgress();
+                    range = Integer.toUnsignedLong(seekBar.getProgress());
                 }
 
                 public void onStopTrackingTouch(SeekBar seekBar) {
@@ -346,7 +346,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                     if(seekBar.getProgress() == 0){
                         dokladnosc.setText("No range limit");
                     }
-                    range = seekBar.getProgress();
+                    range = Integer.toUnsignedLong(seekBar.getProgress());
                 }
 
             });
@@ -778,6 +778,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
     }
 
     private static void getPublicGroups(FirebaseCallback firebaseCallback){
+        TreeSet<PublicGroup> setBuf = new TreeSet<>();
         publicGroupsListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -807,8 +808,44 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                             }
                     }
                     distBuf = FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(latBuf, lonBuf));
-                    publicGroupList.put(distBuf, iterator.next());
+                    //Set<PublicGroup> test = new TreeSet<PublicGroup>();
+                    //test.add(new PublicGroup("1"));
+                    Queue<Object> groupParameters = new LinkedList<>();
+                    for(Object g: ((HashMap)iterator.next()).values()){
+                        groupParameters.add(g);
+//                        if(publicGroupList.containsKey(distBuf)){
+//                            publicGroupList.get(distBuf).add(g);
+//                        }else{
+//                            publicGroupList.put(distBuf, new TreeSet<>());
+//                        }
+                    }
+                        //Queue<Object> groupParametersBuf = new LinkedList<>();
+                        //groupParametersBuf.addAll(groupParameters);
+                        //System.out.println("GROUP PAREMETERS SIZE = " + groupParameters.size());
+                        //System.out.println("GROUP FACTORY OUTPUT = " + GroupFactory.getGroup(groupParametersBuf));
+                        setBuf.add(GroupFactory.getGroup(groupParameters));
+                        //System.out.println("SET BUF = " + setBuf);
+//                        if(publicGroupList.containsKey(distBuf)){
+//                            System.out.println("PUBLIC GROUP LIST BEFORE = " + publicGroupList);
+//                            publicGroupList.get(distBuf).add(GroupFactory.getGroup(groupParameters));
+//                            System.out.println("FactoryTest = " + GroupFactory.getGroup(groupParametersBuf));
+//                            System.out.println("PUBLIC GROUP LIST AFTER = " + publicGroupList);
+//                        }else{
+//                            System.out.println("PUBLIC GROUP LIST BEFORE = " + publicGroupList);
+//                            publicGroupList.put(distBuf, new TreeSet<PublicGroup>());
+//                            publicGroupList.get(distBuf).add(GroupFactory.getGroup(groupParameters));
+//                            System.out.println("FactoryTest = " + GroupFactory.getGroup(groupParametersBuf));
+//                            System.out.println("PUBLIC GROUP LIST AFTER = " + publicGroupList);
+//                        }
+                    //publicGroupList.put(distBuf, GroupFactory.getGroup(groupParameters));
+                    //System.out.println("ITERATOR NEXT = " + iterator.next());
+                    //System.out.println("PUBLIC GROUP LIST = " + publicGroupList);
+                    //System.out.println("PUBLIC GROUP LIST = " + publicGroupList);
+                    //publicGroupList.put(distBuf+2, test);
                 }
+                publicGroupList.put(distBuf, setBuf);
+                System.out.println("PUBLIC GROUP LIST = " + publicGroupList);
+
 
 //                while(iterator.hasNext()){
 //
@@ -819,13 +856,15 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                     futureNames = executorService.submit(new NamesHolder(){
                         @Override
                         public List<String> call(){
-                            Set<PublicGroup> setBuf = new HashSet<>();
+                            Set<PublicGroup> setBuf = new TreeSet<>();
                             List<String> buf =  new ArrayList<>();
                             Iterator it = publicGroupList.entrySet().iterator();
+                            System.out.println("ITERATOR = " + it);
                             while (it.hasNext()) {
                                 Map.Entry pairs = (Map.Entry) it.next();
-
-                                setBuf.addAll(((HashMap)pairs.getValue()).values());
+                                //System.out.println("SETBUF = " + pairs.getValue());
+                                setBuf.addAll((TreeSet)pairs.getValue());
+                                System.out.println("SETBUF = " + setBuf);
                             }
                             Long rangeGroup = 2L;
                             Long messagesCounter = 0L;
@@ -842,11 +881,13 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                     }
                                     System.out.println("Long: " + (Long) g);
                                 }
-                                if(g instanceof String && (range == 0 || distBuf < range)){
+                                if(g instanceof String){
                                     buf.add(g.toString() + ", " + distBuf + " km away");
                                 }
+                                buf.add(g.toString() + ", " + distBuf + " km away");
                             }
-                            System.out.println("messagesCounter = " + messagesCounter);
+                            //System.out.println("messagesCounter = " + messagesCounter);
+                            System.out.println("BUF = " + buf);
                             return buf;
                         }
                     });

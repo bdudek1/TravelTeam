@@ -18,11 +18,13 @@ public class GroupFactory {
     private static String name;
     private static double lat;
     private static double lon;
-    private static int range;
+    private static Long range;
     private static List<User> userList = new ArrayList<>();
     private static List<String> messageList = new ArrayList<>();
 
     public static PublicGroup getGroup(Queue<Object> queue){
+        userList.clear();
+        messageList.clear();
         PublicGroup pGroup = new PublicGroup();
         switch(queue.size()){
             case 5: case 7:{
@@ -34,7 +36,7 @@ public class GroupFactory {
                         name = (String)o;
                     }
                     if(o instanceof Long){
-                        range =(Integer)o;
+                        range =(Long)o;
                     }
                     if(o instanceof ArrayList){
                         if(!gotUsers){
@@ -46,19 +48,19 @@ public class GroupFactory {
                                     u.setUserNumber((String)map.get("userNumber"));
                                     userList.add(u);
                                 }
-                                System.out.println("userList = " + userList);
+                                //System.out.println("userList = " + userList);
 
                             }
                             gotUsers = true;
                         }else{
                             for(Object message:(ArrayList)o){
-                                System.out.println("Message = " + message);
+                                //System.out.println("Message = " + message);
                                 if(message!=null)
                                     System.out.println(message.getClass());
                                 HashMap<String, Object> messageMap = (HashMap)message;
                                 messageList.add((String)messageMap.get("text"));
                             }
-                            System.out.println("messageList = " + messageList);
+                            //System.out.println("messageList = " + messageList);
                         }
                     }
 
@@ -70,8 +72,8 @@ public class GroupFactory {
                             lon = (Double)o;
                         }
                     }
-                    System.out.println("Factory class: " + o.getClass());
-                    System.out.println("Factory value: " + o);
+                    //System.out.println("Factory class: " + o.getClass());
+                    //System.out.println("Factory value: " + o);
 
                 }
                 pGroup.setName(name);
@@ -79,6 +81,7 @@ public class GroupFactory {
                 userList.forEach(a -> pGroup.addUser(a));
                 pGroup.setLat(lat);
                 pGroup.setLon(lon);
+                pGroup.setLatLng(new LatLng(lat, lon));
                 pGroup.setRange(range);
             }
             case 6: case 8:{
