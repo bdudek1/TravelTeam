@@ -21,7 +21,7 @@ public class GroupFactory {
     private static double lon;
     private static Long range;
     private static List<User> userList = new ArrayList<>();
-    private static List<String> messageList = new ArrayList<>();
+    private static ArrayList<Message> messageList = new ArrayList<>();
 
     public static PublicGroup getGroup(Queue<Object> queue){
         userList.clear();
@@ -61,7 +61,7 @@ public class GroupFactory {
                                 if(message!=null)
                                     System.out.println(message);
                                 HashMap<String, Object> messageMap = (HashMap)message;
-                                messageList.add((String)messageMap.get("text"));
+                                messageList.add(new Message((String)messageMap.get("text")));
                             }
                             //System.out.println("messageList = " + messageList);
                         }
@@ -81,16 +81,19 @@ public class GroupFactory {
                 }
                 Map<String, User> userListBuf = new TreeMap<String, User>();
                 for(User u:userList){
+                    if(u!=null && u.getUserNumber()!=null)
                     userListBuf.put(u.getUserNumber(), u);
                 }
                 pGroup.setName(name);
-                messageList.forEach(a -> pGroup.addMessage(new Message(a)));
+                //messageList.forEach(a -> pGroup.addMessage(new Message(a)));
                 //userList.forEach(a -> pGroup.addUser(a));
+                pGroup.setMessageList(messageList);
                 pGroup.setUserList(userListBuf);
                 pGroup.setLat(lat);
                 pGroup.setLon(lon);
                 pGroup.setLatLng(new LatLng(lat, lon));
                 pGroup.setRange(range);
+                System.out.println("FROM FACTORY = " + pGroup.toString());
             }
             case 6: case 8:{
 

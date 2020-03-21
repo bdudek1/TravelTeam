@@ -8,7 +8,9 @@ import com.google.firebase.database.IgnoreExtraProperties;
 @IgnoreExtraProperties
 public class User implements Comparable<User>{
     private String name;
-
+    private String userNumber;
+    private double locLat;
+    private double locLon;
     User(){
     }
     public String getUserNumber() {
@@ -19,11 +21,6 @@ public class User implements Comparable<User>{
         this.userNumber = userNumber;
     }
 
-    private String userNumber;
-
-
-    private double locLat;
-    private double locLon;
 
 
     public void setName(String name){
@@ -39,8 +36,8 @@ public class User implements Comparable<User>{
             this.locLat = location.latitude;
             this.locLon = location.longitude;
 
-            if(location!=null && FunHolder.getCurrentPublicGroup()!=null)
-            MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(MainActivity.user.getUserNumber()).setValue(this);
+            if(location!=null && FunHolder.getCurrentPublicGroup()!=null && getUserNumber() !=null)
+            MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(getUserNumber()).setValue(this);
             //MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(MainActivity.user.getUserNumber()).child("locLat").setValue(locLat);
             //MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(MainActivity.user.getUserNumber()).child("locLon").setValue(locLon);
         }

@@ -603,17 +603,49 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                     Iterator it = publicGroupList.entrySet().iterator();
                     while(it.hasNext()){
                         Map.Entry pairs = (Map.Entry) it.next();
-                        //System.out.println("entrySet class : " + ((HashMap)pairs.getValue()).values().getClass());
+                        Set<PublicGroup> publicGroupSet = new TreeSet<PublicGroup>();
+                        System.out.println("entrySet class : " + pairs.getValue().getClass());
                         Queue<Object> toFactoryObjects = new LinkedList<>();
-                        for(Object g:((HashMap)pairs.getValue()).values()){
-                            toFactoryObjects.add(g);
+                        for(Object g:(TreeSet)pairs.getValue()){
+                            //toFactoryObjects.add(g);
                             //System.out.println("queue size : " + toFactoryObjects.size());
-                            System.out.println(g.getClass());
-                            System.out.println(g.toString());
+                            publicGroupSet.add((PublicGroup)g);
+                            //System.out.println("pG CHECK = " + check);
+                            System.out.println("G OBJECT GETCLASS = " + g.getClass());
+                            System.out.println("G OBJECT STRING VAL = " + g.toString());
                             //z tych wartosci stworzyc nowych userow,
                             //nowe userlisty i nowa grupe
                         }
-                        GroupFactory.getGroup(toFactoryObjects);
+                        //System.out.println(toFactoryObjects.size());
+                        //PublicGroup publicGroup = GroupFactory.getGroup(toFactoryObjects);
+                        for(PublicGroup publicGroup : publicGroupSet){
+                            try{
+                                System.out.println("PG GROUP = " + publicGroup.toStringRepresentation());
+                                System.out.println("ADAPTER NAME = " + adapter.getItem(position));
+                                if(publicGroup != null && publicGroup.toStringRepresentation().equals(adapter.getItem(position))) {
+                                    user.setName(userName.getText().toString());
+                                    groupName = publicGroup.getName();
+                                    //currentId = g.getGroupId();
+                                    System.out.println("BEFORE ADD USER");
+                                    if (publicGroup.addUser(user)) {
+                                        System.out.println("IN ADD USER");
+                                        isPublic = true;
+                                        currentPublicGroup = publicGroup;
+                                        changeActivity();
+                                    }
+                                }
+                            }catch (IndexOutOfBoundsException e){
+                                Toast.makeText(this, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
+                                e.getMessage();
+                            }catch (SameNameUserException e){
+                                Toast.makeText(MainActivity.context, "User with same name is present in the group, please change your name", Toast.LENGTH_LONG).show();
+                                e.getMessage();
+                            }catch (Exception e){
+                                Toast.makeText(this, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
+                                e.getMessage();
+                            }
+                        }
+
                     }
 //                    for(PublicGroup g:publicGroupList.get(key)){
 //                        try{
@@ -782,10 +814,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
         publicGroupsListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Iterable<DataSnapshot> dataChildren = dataSnapshot.getChildren();
                 Map<String, Set<PublicGroup>> dataMap = (HashMap<String, Set<PublicGroup>>)dataSnapshot.getValue();
-
-                Consumer<PublicGroup> pGroupAdder = a -> publicGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), a.getLatLng())).add(a);
                 publicGroupList.clear();
                 Iterator<Set<PublicGroup>> iterator;
                 if(dataMap!=null){
@@ -825,10 +854,8 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                 double lonBuf = 0;
                 while(it.hasNext()){
                     Map.Entry pairs = (Map.Entry) it.next();
-                    //System.out.println("entrySet class : " + ((HashMap)pairs.getValue()).values().getClass());
                     for(Object g:((HashMap)pairs.getValue()).values()){
                             boolean switchLoc = false;
-                            //System.out.println(g.getClass());
                             if(g instanceof Double){
                                 if(!switchLoc){
                                     latBuf = (Double)g;
@@ -839,57 +866,22 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                             }
                     }
                     distBuf = FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(latBuf, lonBuf));
-                    //Set<PublicGroup> test = new TreeSet<PublicGroup>();
-                    //test.add(new PublicGroup("1"));
                     Queue<Object> groupParameters = new LinkedList<>();
                     for(Object g: ((HashMap)iterator.next()).values()){
                         groupParameters.add(g);
-//                        if(publicGroupList.containsKey(distBuf)){
-//                            publicGroupList.get(distBuf).add(g);
-//                        }else{
-//                            publicGroupList.put(distBuf, new TreeSet<>());
-//                        }
                     }
-                        //Queue<Object> groupParametersBuf = new LinkedList<>();
-                        //groupParametersBuf.addAll(groupParameters);
-                        //System.out.println("GROUP PAREMETERS SIZE = " + groupParameters.size());
-                        //System.out.println("GROUP FACTORY OUTPUT = " + GroupFactory.getGroup(groupParametersBuf));
                         setBuf.add(GroupFactory.getGroup(groupParameters));
                         System.out.println("/////////////BUG/////////////////");
-                        //System.out.println("SET BUF = " + setBuf);
-//                        if(publicGroupList.containsKey(distBuf)){
-//                            System.out.println("PUBLIC GROUP LIST BEFORE = " + publicGroupList);
-//                            publicGroupList.get(distBuf).add(GroupFactory.getGroup(groupParameters));
-//                            System.out.println("FactoryTest = " + GroupFactory.getGroup(groupParametersBuf));
-//                            System.out.println("PUBLIC GROUP LIST AFTER = " + publicGroupList);
-//                        }else{
-//                            System.out.println("PUBLIC GROUP LIST BEFORE = " + publicGroupList);
-//                            publicGroupList.put(distBuf, new TreeSet<PublicGroup>());
-//                            publicGroupList.get(distBuf).add(GroupFactory.getGroup(groupParameters));
-//                            System.out.println("FactoryTest = " + GroupFactory.getGroup(groupParametersBuf));
-//                            System.out.println("PUBLIC GROUP LIST AFTER = " + publicGroupList);
-//                        }
-                    //publicGroupList.put(distBuf, GroupFactory.getGroup(groupParameters));
-                    //System.out.println("ITERATOR NEXT = " + iterator.next());
-                    //System.out.println("PUBLIC GROUP LIST = " + publicGroupList);
-                    //System.out.println("PUBLIC GROUP LIST = " + publicGroupList);
-                    //publicGroupList.put(distBuf+2, test);
                 }
                 publicGroupList.put(distBuf, setBuf);
                 System.out.println("PUBLIC GROUP LIST = " + publicGroupList);
-
-
-//                while(iterator.hasNext()){
-//
-//                    //publicGroupList.put(11, iterator.next());
-//                }
 
                 executorService = Executors.newSingleThreadExecutor();
                     futureNames = executorService.submit(new NamesHolder(){
                         @Override
                         public List<String> call(){
                             Set<PublicGroup> setBuf = new TreeSet<>();
-                            List<String> buf =  new ArrayList<>();
+                            Set<String> buf =  new TreeSet<>();
                             Iterator it = publicGroupList.entrySet().iterator();
                             System.out.println("ITERATOR = " + it);
                             while (it.hasNext()) {
@@ -913,14 +905,16 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                     }
                                     System.out.println("Long: " + (Long) g);
                                 }
-                                if(g instanceof String){
-                                    buf.add(g.toString() + ", " + distBuf + " km away");
+                                if(g instanceof String && !g.toString().startsWith("default")){
+                                    buf.add(g.toString() + ", " + distBuf/1000 + " km away");
                                 }
-                                buf.add(g.toString() + ", " + distBuf + " km away");
+                                buf.add(g.toString() + ", " + distBuf/1000 + " km away");
                             }
                             //System.out.println("messagesCounter = " + messagesCounter);
                             System.out.println("BUF = " + buf);
-                            return buf;
+                            List<String> bufNames = new ArrayList<>();
+                            buf.forEach(a->bufNames.add(a));
+                            return bufNames;
                         }
                     });
                     System.out.println("publicGroupList : " + publicGroupList);

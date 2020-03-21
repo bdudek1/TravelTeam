@@ -16,9 +16,7 @@ import java.util.TreeSet;
 
 @IgnoreExtraProperties
 public class PublicGroup implements Comparable<PublicGroup> {
-    //public static int publicGroupCounter = 0;
     private String name = "default";
-    //private String groupId;
     private double locLat;
     private double locLon;
     private Long range;
@@ -77,11 +75,20 @@ public class PublicGroup implements Comparable<PublicGroup> {
     }
 
     public void removeUser(User user){
-        userList.remove(user.getUserNumber(), user);
-        for(User u:userList.values()){
-            u.setUserNumber(Integer.toString(Integer.valueOf(u.getUserNumber()) - 1));
+        if(user!=null && user.getUserNumber()!=null){
+            Map<String, User> userListBuf = new TreeMap<>();
+            userList.remove(user.getUserNumber(), user);
+            for(User u:userList.values()){
+                if(Integer.valueOf(user.getUserNumber()) < Integer.valueOf(u.getUserNumber())){
+                    u.setUserNumber(Integer.toString(Integer.valueOf(u.getUserNumber()) - 1));
+                    userListBuf.put(u.getUserNumber(), u);
+                }else{
+                    userListBuf.put(u.getUserNumber(), u);
+                }
+
+            }
+            MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userListBuf);
         }
-        MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userList);
     }
 
     public boolean tryToDestroy(){
@@ -179,28 +186,23 @@ public class PublicGroup implements Comparable<PublicGroup> {
         }
     }
 
-    @Override
-    public boolean equals(Object o){
-        if(!(o instanceof PublicGroup)){
-            return false;
-        }else{
-            PublicGroup g = (PublicGroup) o;
-            return this.getName().equals(g.getName()) && this.getLatLng().equals(g.getLatLng());
-        }
-    }
 
     @Override
     public String toString(){
-        return getName() +", range = " + getRange();
+        return getName();
     }
 
     public String toStringRepresentation(){
-        return getName() + ", " + FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(getLat(), getLon())) + " km away";
+        return getName() + ", " + FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(getLon(), getLat()))/1000 + " km away";
     }
 
 
     public Map<String, User> getUserList(){
         return userList;
+    }
+
+    public void setMessageList(ArrayList<Message> messages){
+        this.messages = messages;
     }
 
     public ArrayList<Message> getMessages(){
@@ -249,12 +251,42 @@ public class PublicGroup implements Comparable<PublicGroup> {
 
     @Override
     public int compareTo(PublicGroup g){
+        int distance = 0;
+        if(g!=null && g.getRange()!=null){
+            distance = FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()) - g.getRange().intValue() - FunHolder.getDistance(MainActivity.user.getLatLng(), this.getLatLng());
+        }else{
+            return 1;
+        }
+
         try{
-            return (FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()) - g.getRange().intValue() - FunHolder.getDistance(MainActivity.user.getLatLng(), this.getLatLng()));
+            if(!(distance == 0)){
+                return distance;
+            }else{
+                if(this.getLat()>g.getLat()){
+                    return 1;
+                }else{
+                    return -1;
+                }
+            }
+
         }catch(Exception e){
             return 1;
         }
 
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if(!(o instanceof PublicGroup)){
+            return false;
+        }else{
+            PublicGroup g = (PublicGroup)o;
+            if(getName().equals(g.getName()) && getLat() == g.getLat() && getLon() == g.getLon()){
+                return true;
+            }else{
+                return false;
+            }
+        }
     }
 
 }
