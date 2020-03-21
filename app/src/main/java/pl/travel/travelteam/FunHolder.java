@@ -97,8 +97,16 @@ public class FunHolder {
         return MainActivity.currentPublicGroup;
     }
 
+    public static void setCurrentPublicGroup(PublicGroup g){
+        MainActivity.currentPublicGroup = g;
+    }
+
     public static PrivateGroup getCurrentPrivateGroup(){
         return MainActivity.currentPrivateGroup;
+    }
+
+    public static void setCurrentPrivateGroup(PrivateGroup g){
+        MainActivity.currentPrivateGroup = g;
     }
 
     public static List<String> getPublicGroupNames(){

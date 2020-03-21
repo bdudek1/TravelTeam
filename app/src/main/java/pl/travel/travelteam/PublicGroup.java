@@ -21,7 +21,6 @@ public class PublicGroup implements Comparable<PublicGroup> {
     private double locLon;
     private Long range;
     private int messageCounter;
-    private short userSizeBuf = 0;
     private Map<String, User> userList = new TreeMap<>();
     private ArrayList<Message> messages = new ArrayList<>();
 
@@ -57,6 +56,7 @@ public class PublicGroup implements Comparable<PublicGroup> {
                 }
             }
             if(isAdded && FunHolder.getCurrentPublicGroup()!=null){
+                System.out.println("USER LIST SIZE IN PG CODE = " + userList.size());
                 user.setUserNumber(Integer.toString(userList.size()+1));
                 userList.putIfAbsent(user.getUserNumber(), user);
 //                if(userSizeBuf != userList.size()){
@@ -89,6 +89,7 @@ public class PublicGroup implements Comparable<PublicGroup> {
             }
             MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userListBuf);
         }
+        System.out.println("USER REMOVED");
     }
 
     public boolean tryToDestroy(){
@@ -120,8 +121,8 @@ public class PublicGroup implements Comparable<PublicGroup> {
 //            }
 //        }
 
-        MainActivity.myRef.child("public_groups").child(getName()).child("messageCounter").removeValue();
-        MainActivity.myRef.child("public_groups").child(getName()).child("messages").removeValue();
+        //MainActivity.myRef.child("public_groups").child(getName()).child("messageCounter").removeValue();
+        //MainActivity.myRef.child("public_groups").child(getName()).child("messages").removeValue();
         MainActivity.myRef.child("public_groups").child(getName()).removeValue();
         //publicGroupCounter--;
     }
@@ -193,7 +194,7 @@ public class PublicGroup implements Comparable<PublicGroup> {
     }
 
     public String toStringRepresentation(){
-        return getName() + ", " + FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(getLon(), getLat()))/1000 + " km away";
+        return getName() + ", " + FunHolder.getDistance(MainActivity.user.getLatLng(), getLatLng())/1000 + " km away";
     }
 
 

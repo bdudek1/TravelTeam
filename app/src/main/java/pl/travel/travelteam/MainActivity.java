@@ -598,51 +598,40 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
         if(isInPublicSection){
             for(Integer key : publicGroupList.keySet()){
                 if(key < range || range == 0){
-                    //Iterator<PublicGroup> iterator = publicGroupList.get(key).iterator();
-                    //skomentowac powyzsze(znacznik)
                     Iterator it = publicGroupList.entrySet().iterator();
                     while(it.hasNext()){
                         Map.Entry pairs = (Map.Entry) it.next();
                         Set<PublicGroup> publicGroupSet = new TreeSet<PublicGroup>();
                         System.out.println("entrySet class : " + pairs.getValue().getClass());
-                        Queue<Object> toFactoryObjects = new LinkedList<>();
                         for(Object g:(TreeSet)pairs.getValue()){
-                            //toFactoryObjects.add(g);
-                            //System.out.println("queue size : " + toFactoryObjects.size());
                             publicGroupSet.add((PublicGroup)g);
-                            //System.out.println("pG CHECK = " + check);
                             System.out.println("G OBJECT GETCLASS = " + g.getClass());
                             System.out.println("G OBJECT STRING VAL = " + g.toString());
-                            //z tych wartosci stworzyc nowych userow,
-                            //nowe userlisty i nowa grupe
                         }
-                        //System.out.println(toFactoryObjects.size());
-                        //PublicGroup publicGroup = GroupFactory.getGroup(toFactoryObjects);
                         for(PublicGroup publicGroup : publicGroupSet){
                             try{
                                 System.out.println("PG GROUP = " + publicGroup.toStringRepresentation());
                                 System.out.println("ADAPTER NAME = " + adapter.getItem(position));
                                 if(publicGroup != null && publicGroup.toStringRepresentation().equals(adapter.getItem(position))) {
-                                    user.setName(userName.getText().toString());
                                     groupName = publicGroup.getName();
-                                    //currentId = g.getGroupId();
-                                    System.out.println("BEFORE ADD USER");
+                                    System.out.println("USERLIST SIZE BEFORE ADD = " + publicGroup.getUserList().size());
+                                    FunHolder.setCurrentPublicGroup(publicGroup);
                                     if (publicGroup.addUser(user)) {
-                                        System.out.println("IN ADD USER");
                                         isPublic = true;
-                                        currentPublicGroup = publicGroup;
                                         changeActivity();
+                                    }else{
+                                        FunHolder.setCurrentPublicGroup(null);
                                     }
                                 }
                             }catch (IndexOutOfBoundsException e){
                                 Toast.makeText(this, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
-                                e.getMessage();
+                                System.out.println("ERROR = " + e.getMessage());
                             }catch (SameNameUserException e){
                                 Toast.makeText(MainActivity.context, "User with same name is present in the group, please change your name", Toast.LENGTH_LONG).show();
                                 e.getMessage();
                             }catch (Exception e){
                                 Toast.makeText(this, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
-                                e.getMessage();
+                                System.out.println("ERROR = " + e.getMessage());
                             }
                         }
 
@@ -709,7 +698,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
                                     }catch (Exception e){
                                         Toast.makeText(getApplicationContext(), "Please refresh the group list.", Toast.LENGTH_SHORT).show();
-                                        e.getMessage();
+                                        System.out.println("ERROR = " + e.getMessage());
                                     }
 
                             }
@@ -811,6 +800,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
     private static void getPublicGroups(FirebaseCallback firebaseCallback){
         TreeSet<PublicGroup> setBuf = new TreeSet<>();
+        Map<String, Integer> nameDistance = new HashMap<>();
         publicGroupsListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -865,12 +855,14 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                 }
                             }
                     }
-                    distBuf = FunHolder.getDistance(MainActivity.user.getLatLng(), new LatLng(latBuf, lonBuf));
                     Queue<Object> groupParameters = new LinkedList<>();
                     for(Object g: ((HashMap)iterator.next()).values()){
                         groupParameters.add(g);
                     }
-                        setBuf.add(GroupFactory.getGroup(groupParameters));
+                        PublicGroup groupBuf = GroupFactory.getGroup(groupParameters);
+                        //distBuf = FunHolder.getDistance(user.getLatLng(), groupBuf.getLatLng());
+                        nameDistance.put(groupBuf.getName(), FunHolder.getDistance(user.getLatLng(), groupBuf.getLatLng())/1000);
+                        setBuf.add(groupBuf);
                         System.out.println("/////////////BUG/////////////////");
                 }
                 publicGroupList.put(distBuf, setBuf);
@@ -906,11 +898,17 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                     System.out.println("Long: " + (Long) g);
                                 }
                                 if(g instanceof String && !g.toString().startsWith("default")){
-                                    buf.add(g.toString() + ", " + distBuf/1000 + " km away");
+                                    buf.add(g.toString() + ", " + nameDistance.get(g.toString()) + " km away");
+                                    System.out.println("MAP = " + nameDistance);
+                                    System.out.println("KEY = " + g.toString());
+                                    System.out.println("VAL = " + nameDistance.get(g.toString()));
                                 }
-                                buf.add(g.toString() + ", " + distBuf/1000 + " km away");
+                                if(!g.toString().startsWith("default"))
+                                buf.add(g.toString() + ", " + nameDistance.get(g.toString()) + " km away");
+                                System.out.println("MAP = " + nameDistance);
+                                System.out.println("KEY = " + g.toString());
+                                System.out.println("VAL = " + nameDistance.get(g.toString()));
                             }
-                            //System.out.println("messagesCounter = " + messagesCounter);
                             System.out.println("BUF = " + buf);
                             List<String> bufNames = new ArrayList<>();
                             buf.forEach(a->bufNames.add(a));

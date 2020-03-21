@@ -238,10 +238,12 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             chat.setLayoutManager(new LinearLayoutManager(context));
             adapterChat = new RecyclerViewAdapterChat(context, new ArrayList<SpannableString>());
             LinkedHashSet<String> hashSet;
-            if(MainActivity.isPublic){
+            if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
                 hashSet = new LinkedHashSet<>(FunHolder.getCurrentPublicGroup().getUserRepresentations());
-            }else{
+            }else if(FunHolder.getCurrentPrivateGroup()!=null){
                 hashSet = new LinkedHashSet<>(FunHolder.getCurrentPrivateGroup().getUserRepresentations());
+            }else{
+                hashSet = new LinkedHashSet<>();
             }
 
             ArrayList<String> listWithoutDuplicates = new ArrayList<>(hashSet);
@@ -265,38 +267,38 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     users.clear();
                     messages.clear();
                     spannableMessages.clear();
-                    if(MainActivity.isPublic){
+                    if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
                         FunHolder.getCurrentPublicGroup().getMessages().clear();
-                    }else{
+                    }else if(FunHolder.getCurrentPrivateGroup()!=null){
                         FunHolder.getCurrentPrivateGroup().getMessages().clear();
                     }
 
                     for(DataSnapshot d:dataChildren){
-                        if(MainActivity.isPublic){
+                        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
                             FunHolder.getCurrentPublicGroup().getMessages().add(d.getValue(Message.class));
-                        }else{
+                        }else if(FunHolder.getCurrentPrivateGroup()!=null){
                             FunHolder.getCurrentPrivateGroup().getMessages().add(d.getValue(Message.class));
                         }
 
                         messages.add(d.getValue(Message.class));
                         spannableMessages.add(d.getValue(Message.class).toSpannableString());
                     }
-                    if(MainActivity.isPublic){
+                    if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
                         FunHolder.getCurrentPublicGroup().setMessageCounter(messages.size());
-                    }else{
+                    }else if(FunHolder.getCurrentPrivateGroup()!=null){
                         FunHolder.getCurrentPrivateGroup().setMessageCounter(messages.size());
                     }
 
                     if(messages.size()>0){
-                        if(MainActivity.isPublic){
+                        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
                             FunHolder.getCurrentPublicGroup().messagesBuf = messages;
-                        }else{
+                        }else if(FunHolder.getCurrentPrivateGroup()!=null){
                             FunHolder.getCurrentPrivateGroup().messagesBuf = messages;
                         }
                     }
 
 
-                    if(MainActivity.isPublic){
+                    if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
                         if(FunHolder.getCurrentPublicGroup().getMessages()!=null){
                             adapterChat = new RecyclerViewAdapterChat(context, spannableMessages);
                             adapterChat.setClickListener(listenerContextChat);
@@ -304,7 +306,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                             chat.setAdapter(adapterChat);
                             chat.invalidate();
                         }
-                    }else{
+                    }else if(FunHolder.getCurrentPrivateGroup()!=null){
                         if(FunHolder.getCurrentPrivateGroup().getMessages()!=null){
                             adapterChat = new RecyclerViewAdapterChat(context, spannableMessages);
                             adapterChat.setClickListener(listenerContextChat);
@@ -330,17 +332,19 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     Iterable<DataSnapshot> dataChildren = dataSnapshot.getChildren();
 
                     if(MainActivity.isPublic){
+                        if(FunHolder.getCurrentPublicGroup()!=null)
                         FunHolder.getCurrentPublicGroup().getUserList().clear();
                     }else{
+                        if(FunHolder.getCurrentPrivateGroup()!=null)
                         FunHolder.getCurrentPrivateGroup().getUserList().clear();
                     }
 
 
                     for(DataSnapshot d:dataChildren){
                         try{
-                            if(MainActivity.isPublic){
+                            if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
                                 FunHolder.getCurrentPublicGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
-                            }else{
+                            }else if(FunHolder.getCurrentPrivateGroup()!=null){
                                 FunHolder.getCurrentPrivateGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
                             }
                         }catch(Exception e){
@@ -357,7 +361,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         e.getMessage();
                     }
 
-                    if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>0){
+                    if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null && FunHolder.getCurrentPublicGroup().getUserList().size()>0){
                         if(FunHolder.getCurrentPublicGroup().getLat() == 0.0 || FunHolder.getCurrentPublicGroup().getLon() == 0.0){
                             FunHolder.getCurrentPublicGroup().setLatLng(new LatLng(MainActivity.user.getLat(), MainActivity.user.getLon()));
                         }
@@ -368,7 +372,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("range").setValue(FunHolder.getCurrentPublicGroup().getRange());
                         MainActivity.publicGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPublicGroup().getLatLng()), new TreeSet<PublicGroup>());
                         MainActivity.publicGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPublicGroup().getLatLng())).add(FunHolder.getCurrentPublicGroup());
-                    }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>0){
+                    }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup()!=null & FunHolder.getCurrentPrivateGroup().getUserList().size()>0){
                         if(FunHolder.getCurrentPrivateGroup().getLat() == 0.0 || FunHolder.getCurrentPrivateGroup().getLon() == 0.0){
                             FunHolder.getCurrentPrivateGroup().setLatLng(new LatLng(MainActivity.user.getLat(), MainActivity.user.getLon()));
                         }
@@ -421,9 +425,9 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     if(messageEtext.getText().toString().equals("")){
                         Toast.makeText(context, "Please enter message.", Toast.LENGTH_SHORT).show();
                     }else{
-                        if(MainActivity.isPublic){
+                        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
                             FunHolder.getCurrentPublicGroup().addMessage(new Message(MainActivity.user , messageEtext.getText().toString()));
-                        }else{
+                        }else if(FunHolder.getCurrentPrivateGroup()!=null){
                             FunHolder.getCurrentPrivateGroup().addMessage(new Message(MainActivity.user , messageEtext.getText().toString()));
                         }
                         messageEtext.setText("");
@@ -475,31 +479,14 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     @Override
     public void onBackPressed() {
 
-        if(MainActivity.isPublic){
-            FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
+        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
+            //FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
             FunHolder.getCurrentPublicGroup().tryToDestroy();
-        }else{
-            FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
+        }else if(FunHolder.getCurrentPrivateGroup()!=null){
+            //FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
             FunHolder.getCurrentPrivateGroup().tryToDestroy();
         }
 
-        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>0){
-            msgsBuf.addAll(FunHolder.getCurrentPublicGroup().messagesBuf);
-        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>0){
-            msgsBuf.addAll(FunHolder.getCurrentPrivateGroup().messagesBuf);
-        }
-
-//        if(MainActivity.isPublic){
-//            FunHolder.removeDuplicates(FunHolder.getCurrentPublicGroup().getUserList());
-//        }else{
-//            FunHolder.removeDuplicates(FunHolder.getCurrentPrivateGroup().getUserList());
-//        }
-
-//        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()<2){
-//            FunHolder.getCurrentPublicGroup().getUserList().clear();
-//        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()<2){
-//            FunHolder.getCurrentPrivateGroup().getUserList().clear();
-//        }
         if(GroupActivity.usersListener!=null && GroupActivity.userRef!=null)
             GroupActivity.userRef.removeEventListener(GroupActivity.usersListener);
         if(GroupActivity.messageRef!=null && GroupActivity.messagesListener!=null)
@@ -545,7 +532,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                 }
             }
 
-            if(MainActivity.isPublic){
+            if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
                 for(User u:FunHolder.getCurrentPublicGroup().getUserList().values()){
                     String s;
                     if(FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())> 5000){
@@ -568,7 +555,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     }
 
                 }
-            }else{
+            }else if(FunHolder.getCurrentPrivateGroup()!=null){
                 for(User u:FunHolder.getCurrentPrivateGroup().getUserList().values()){
                     String s;
                     if(FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng())> 5000){
@@ -777,14 +764,16 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
     @Override
     public void onDestroy(){
-        if(MainActivity.isPublic){
+        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
             FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
             if(!FunHolder.getCurrentPublicGroup().tryToDestroy());
             FunHolder.getCurrentPublicGroup().addMessages(msgsBuf);
-        }else{
+            FunHolder.setCurrentPublicGroup(null);
+        }else if(FunHolder.getCurrentPrivateGroup()!=null){
             FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
             if(!FunHolder.getCurrentPrivateGroup().tryToDestroy());
             FunHolder.getCurrentPrivateGroup().addMessages(msgsBuf);
+            FunHolder.setCurrentPrivateGroup(null);
         }
         super.onDestroy();
     }

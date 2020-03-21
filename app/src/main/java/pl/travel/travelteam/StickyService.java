@@ -19,16 +19,16 @@ public class StickyService extends Service {
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()>1){
+        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null && FunHolder.getCurrentPublicGroup().getUserList().size()>1){
             GroupActivity.msgsBuf.addAll(FunHolder.getCurrentPublicGroup().messagesBuf);
-        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()>1){
+        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup()!=null && FunHolder.getCurrentPrivateGroup().getUserList().size()>1){
             GroupActivity.msgsBuf.addAll(FunHolder.getCurrentPrivateGroup().messagesBuf);
         }
 
-        if(MainActivity.isPublic){
+        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
             FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
             FunHolder.getCurrentPublicGroup().tryToDestroy();
-        }else{
+        }else if(FunHolder.getCurrentPrivateGroup()!=null){
             FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
             FunHolder.getCurrentPrivateGroup().tryToDestroy();
         }
@@ -40,9 +40,9 @@ public class StickyService extends Service {
 //        }
 
 
-        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup().getUserList().size()<2){
+        if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null && FunHolder.getCurrentPublicGroup().getUserList().size()<2){
             FunHolder.getCurrentPublicGroup().getUserList().clear();
-        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup().getUserList().size()<2){
+        }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup()!=null && FunHolder.getCurrentPrivateGroup().getUserList().size()<2){
             FunHolder.getCurrentPrivateGroup().getUserList().clear();
         }
         if(GroupActivity.usersListener!=null && GroupActivity.userRef!=null)
