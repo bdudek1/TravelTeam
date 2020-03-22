@@ -82,8 +82,11 @@ public class GroupFactory {
                 }
                 Map<String, User> userListBuf = new TreeMap<String, User>();
                 for(User u:userList){
-                    if(u!=null && u.getUserNumber()!=null)
-                    userListBuf.put(u.getUserNumber(), u);
+                    if(u!=null && u.getUserNumber()!=null){
+                        //u.setLat(20);
+                        //u.setLon(50);
+                        userListBuf.put(u.getUserNumber(), u);
+                    }
                 }
                 pGroup.setName(name);
                 //messageList.forEach(a -> pGroup.addMessage(new Message(a)));
@@ -100,7 +103,7 @@ public class GroupFactory {
 
             }
             default:{
-                Toast.makeText(MainActivity.context, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.context, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
             }
         }
         return pGroup;

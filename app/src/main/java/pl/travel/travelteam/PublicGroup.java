@@ -61,9 +61,11 @@ public class PublicGroup implements Comparable<PublicGroup> {
             if(isAdded && FunHolder.getCurrentPublicGroup()!=null){
                 System.out.println("USER LIST SIZE IN PG CODE = " + userList.size());
                 user.setUserNumber(Integer.toString(userList.size()+1));
+                user.setRemoved(false);
                 userList.putIfAbsent(user.getUserNumber(), user);
 //                if(userSizeBuf != userList.size()){
-                MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userList);
+                //MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").removeValue();
+                //MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userList);
 //                    System.out.println("USER SIZE BUF = " + userSizeBuf);
 //                    System.out.println("USER LIST SIZE =  " + userList.size());
 //                    userSizeBuf = (short)(userList.size()+1);
@@ -80,18 +82,28 @@ public class PublicGroup implements Comparable<PublicGroup> {
     public void removeUser(User user){
         if(user!=null && user.getUserNumber()!=null){
             Map<String, User> userListBuf = new TreeMap<>();
-            userList.remove(user.getUserNumber(), user);
+            if(userList.remove(user.getUserNumber(), user))
+                user.setRemoved(true);
             for(User u:userList.values()){
-                if(Integer.valueOf(user.getUserNumber()) < Integer.valueOf(u.getUserNumber())){
+                if(Integer.valueOf(user.getUserNumber()) < Integer.valueOf(u.getUserNumber()) && !u.equals(user)){
                     u.setUserNumber(Integer.toString(Integer.valueOf(u.getUserNumber()) - 1));
                     if(!userListBuf.containsValue(u))
                     userListBuf.put(u.getUserNumber(), u);
-                }else{
+                }else if(!u.equals(user)){
                     if(!userListBuf.containsValue(u))
                     userListBuf.put(u.getUserNumber(), u);
                 }
 
             }
+//            System.out.println("//////////////////////////////////////");
+//            for(User u: userListBuf.values()){
+//                System.out.println(u);
+//                System.out.println(u.getLatLng());
+//            }
+//            System.out.println("//////////////////////////////////////");
+            //TU JEST DOBRZE
+            System.out.println("PRZED USTALENIEM USERLIST = " + userListBuf);
+            MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").removeValue();
             MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userListBuf);
         }
         System.out.println("USER REMOVED");

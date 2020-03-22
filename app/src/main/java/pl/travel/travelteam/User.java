@@ -11,6 +11,8 @@ public class User implements Comparable<User>{
     private String userNumber;
     private double locLat;
     private double locLon;
+    @Exclude
+    private boolean isRemoved = false;
     User(){
     }
     public String getUserNumber() {
@@ -35,11 +37,13 @@ public class User implements Comparable<User>{
         if(location.latitude != 0.0 && location.longitude != 0.0){
             this.locLat = location.latitude;
             this.locLon = location.longitude;
+            //
+            if(!isRemoved()){
+                MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(getUserNumber()).setValue(this);
+            }
+//                MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(MainActivity.user.getUserNumber()).child("lat").setValue(locLat);
+//                MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(MainActivity.user.getUserNumber()).child("lon").setValue(locLon);
 
-            if(location!=null && FunHolder.getCurrentPublicGroup()!=null && getUserNumber() !=null)
-            MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(getUserNumber()).setValue(this);
-            //MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(MainActivity.user.getUserNumber()).child("locLat").setValue(locLat);
-            //MainActivity.myRef.child(GroupActivity.groupsReference).child(MainActivity.groupName).child("userList").child(MainActivity.user.getUserNumber()).child("locLon").setValue(locLon);
         }
     }
     public LatLng getLatLng(){
@@ -66,9 +70,24 @@ public class User implements Comparable<User>{
         }
     }
 
+    public void setLat(double locLat){
+        this.locLat = locLat;
+    }
+
+    public void setLon(double locLon){
+        this.locLon = locLon;
+    }
+
+
 
     public User(String name){
         this.name = name;
+    }
+
+    public User(String name, double lat, double lon){
+        this.name = name;
+        this.locLat = lat;
+        this.locLon = lon;
     }
 
     @Override
@@ -101,5 +120,13 @@ public class User implements Comparable<User>{
         return Integer.valueOf(getUserNumber()) - Integer.valueOf(u.getUserNumber());
     }
 
+    @Exclude
+    public boolean isRemoved(){
+        return isRemoved;
+    }
 
+    @Exclude
+    public void setRemoved(boolean removed) {
+        isRemoved = removed;
+    }
 }

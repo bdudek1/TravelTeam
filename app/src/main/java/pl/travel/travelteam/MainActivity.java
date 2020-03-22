@@ -365,8 +365,8 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                                 groupName = name.getText().toString();
                                                 currentPublicGroup = new PublicGroup(name.getText().toString());
                                                 currentPublicGroup.addUser(user);
-                                                currentPublicGroup.addUser(new User("KUZYN"));
-                                                currentPublicGroup.addUser(new User("KUZYN2"));
+                                                currentPublicGroup.addUser(new User("KUZYN", 1.1, 2.2));
+                                                currentPublicGroup.addUser(new User("KUZYN2", 2.2, 1.1));
                                                 currentPublicGroup.setRange(range);
                                                 currentPublicGroup.setLat(user.getLat());
                                                 currentPublicGroup.setLon(user.getLon());
@@ -773,6 +773,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Map<String, Set<PublicGroup>> dataMap = (HashMap<String, Set<PublicGroup>>)dataSnapshot.getValue();
                 publicGroupList.clear();
+                setBuf.clear();
                 Iterator<Set<PublicGroup>> iterator;
                 if(dataMap!=null){
                     iterator = dataMap.values().iterator();
@@ -829,10 +830,11 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                         PublicGroup groupBuf = GroupFactory.getGroup(groupParameters);
                         //distBuf = FunHolder.getDistance(user.getLatLng(), groupBuf.getLatLng());
                         nameDistance.put(groupBuf.getName(), FunHolder.getDistance(user.getLatLng(), groupBuf.getLatLng())/1000);
+                        if(!setBuf.contains(groupBuf))
                         setBuf.add(groupBuf);
                         System.out.println("/////////////BUG/////////////////");
                 }
-                publicGroupList.put(distBuf, setBuf);
+                publicGroupList.putIfAbsent(distBuf, setBuf);
                 System.out.println("PUBLIC GROUP LIST = " + publicGroupList);
 
                 executorService = Executors.newSingleThreadExecutor();

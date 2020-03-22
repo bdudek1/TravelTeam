@@ -497,7 +497,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         if(GroupActivity.messageRef!=null && GroupActivity.messagesListener!=null)
             GroupActivity.messageRef.removeEventListener(GroupActivity.messagesListener);
 
-        //MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).removeValue();
+        //MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child().removeValue();
         super.onBackPressed();
 
     }
@@ -545,13 +545,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     }else{
                         s = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng()) + "m";
                     }
-                    if(u!=null && u.getName().equals(MainActivity.user.getName()) && FunHolder.getDistance(u.getLatLng(), MainActivity.user.getLatLng()) == 0){
-                        mMap.addMarker(new MarkerOptions()
-                                .position(u.getLatLng())
-                                .title(u.getName())
-                                .snippet(s)
-                                .icon(u.getName().equals(MainActivity.user.getName()) ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-                    }else if(u!=null && !u.getName().equals(MainActivity.user.getName())){
+                    if(u!=null){
+                        System.out.println("LAT LNG = " + u.getLatLng());
                         mMap.addMarker(new MarkerOptions()
                                 .position(u.getLatLng())
                                 .title(u.getName())
