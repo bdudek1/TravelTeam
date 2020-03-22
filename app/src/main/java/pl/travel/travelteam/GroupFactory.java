@@ -49,6 +49,7 @@ public class GroupFactory {
                                     //System.out.println("MAP LAT CLASS = " + ((Long)map.get("lat")).getClass());
                                     //System.out.println("MAP LAT VALUE = " + (Double)map.get("lat"));
                                     u.setUserNumber((String)map.get("userNumber"));
+                                    if(!userList.contains(u))
                                     userList.add(u);
                                 }
                                 System.out.println("userList = " + userList);

@@ -18,7 +18,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -54,11 +53,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.reward.RewardedVideoAd;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,14 +63,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 interface FirebaseCallback{
     void onCallback(Map<Integer, Set<PublicGroup>> list);
@@ -91,20 +81,20 @@ interface NamesHolder extends Callable {
 
 final public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.ItemClickListener, LocationListener, RewardedVideoAdListener {
     static TextView informacje;
-    static TextView wprowadzNick;
-    static TextView typGrupy;
-    static Button szukajDruzyny;
-    static Button stworzDruzyne;
-    static Button zmienNick;
-    static Button buttonInfo;
-    static SeekBar zasiegBar;
+    static TextView enterNick;
+    static TextView groupType;
+    static Button findTeamButton;
+    static Button createTeamButton;
+    static Button changeNickButton;
+    static Button informationButton;
+    static SeekBar rangeBar;
     static Context context;
-    private static RecyclerView listaGrup;
-    private static RecyclerView listaGrupPrywatnych;
+    private static RecyclerView groupsView;
+    private static RecyclerView privateGroupsView;
     private static BottomNavigationView navigation;
     private static RecyclerViewAdapter.ItemClickListener listenerContext;
     private static RecyclerViewAdapter adapter;
-    private static RecyclerViewAdapter adapterPrywatnych;
+    private static RecyclerViewAdapter privateAdapter;
     static Map<Integer, Set<PublicGroup>> publicGroupList = new TreeMap<>();
     static Map<Integer, PrivateGroup> privateGroupList = new TreeMap<>();
     static String groupName;
@@ -263,29 +253,29 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
         public PlaceholderFragment() {
 
         }
-        TextView dokladnosc;
+        TextView accuracy;
         @Override
         public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            userName = rootView.findViewById(R.id.inputNickText);
+            userName = rootView.findViewById(R.id.inputNickTextId);
             userName.setText(user.getName());
-            listaGrup = rootView.findViewById(R.id.groupList);
-            listaGrup.setLayoutManager(new LinearLayoutManager(context));
+            groupsView = rootView.findViewById(R.id.groupListId);
+            groupsView.setLayoutManager(new LinearLayoutManager(context));
             adapter = new RecyclerViewAdapter(context, new ArrayList<String>());
             adapter.setClickListener(listenerContext);
-            listaGrup.setAdapter(adapter);
+            groupsView.setAdapter(adapter);
             try{
-                DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(listaGrup.getContext(),
+                DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(groupsView.getContext(),
                         getResources().getConfiguration().orientation);
-                listaGrup.addItemDecoration(dividerItemDecoration);
+                groupsView.addItemDecoration(dividerItemDecoration);
             }catch(IllegalArgumentException e){
                 e.getMessage();
             }
-            adapterPrywatnych = new RecyclerViewAdapter(context, new ArrayList<String>());
-            adapterPrywatnych.setClickListener(listenerContext);
+            privateAdapter = new RecyclerViewAdapter(context, new ArrayList<String>());
+            privateAdapter.setClickListener(listenerContext);
 
-            navigation = rootView.findViewById(R.id.bottomNavigation);
+            navigation = rootView.findViewById(R.id.bottomNavigationId);
             navigation.setSelectedItemId(R.id.home);
             FunHolder.adjustGravity(navigation);
             navigation.setOnClickListener(null);
@@ -294,63 +284,63 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                 navigation.getMenu().getItem(i).setEnabled(false);
             }
 
-            listaGrupPrywatnych = rootView.findViewById(R.id.privateGroupList);
-            listaGrupPrywatnych.setLayoutManager(new LinearLayoutManager(context));
-            listaGrupPrywatnych.setAdapter(adapterPrywatnych);
+            privateGroupsView = rootView.findViewById(R.id.privateGroupListId);
+            privateGroupsView.setLayoutManager(new LinearLayoutManager(context));
+            privateGroupsView.setAdapter(privateAdapter);
             try{
-                DividerItemDecoration privateDividerItemDecoration = new DividerItemDecoration(listaGrupPrywatnych.getContext(),
+                DividerItemDecoration privateDividerItemDecoration = new DividerItemDecoration(privateGroupsView.getContext(),
                         getResources().getConfiguration().orientation);
-                listaGrupPrywatnych.addItemDecoration(privateDividerItemDecoration);
+                privateGroupsView.addItemDecoration(privateDividerItemDecoration);
             }catch(IllegalArgumentException e){
                 e.getMessage();
             }
-            listaGrup = rootView.findViewById(R.id.groupList);
-            typGrupy = (TextView) rootView.findViewById(R.id.lotekName);
-            dokladnosc = (TextView) rootView.findViewById(R.id.dokladnosc);
-            wprowadzNick = (TextView) rootView.findViewById(R.id.wprowadzNick);
-            informacje = (TextView) rootView.findViewById(R.id.opis);
-            szukajDruzyny = rootView.findViewById(R.id.seekForTeam);
-            stworzDruzyne = rootView.findViewById(R.id.createTeam);
-            zmienNick = rootView.findViewById(R.id.buttonChangeName);
-            wprowadzNick.setTextSize(32);
-            typGrupy.setTextSize(32);
+            groupsView = rootView.findViewById(R.id.groupListId);
+            groupType = (TextView) rootView.findViewById(R.id.groupTypeId);
+            accuracy = (TextView) rootView.findViewById(R.id.accuracyId);
+            enterNick = (TextView) rootView.findViewById(R.id.enterNickId);
+            informacje = (TextView) rootView.findViewById(R.id.welcomeId);
+            findTeamButton = rootView.findViewById(R.id.seekForTeamId);
+            createTeamButton = rootView.findViewById(R.id.createTeamId);
+            changeNickButton = rootView.findViewById(R.id.buttonChangeNameId);
+            enterNick.setTextSize(32);
+            groupType.setTextSize(32);
             userName.setTextSize(32);
-            dokladnosc.setTextSize(18);
+            accuracy.setTextSize(18);
             informacje.setTextSize(16);
-            dokladnosc.setText("No range limit");
-            buttonInfo = rootView.findViewById(R.id.buttonInformacje);
+            accuracy.setText("No range limit");
+            informationButton = rootView.findViewById(R.id.informationButtonId);
 
 
 
 
-            zasiegBar = rootView.findViewById(R.id.rangeBar);
-            zasiegBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            rangeBar = rootView.findViewById(R.id.rangeBarId);
+            rangeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    dokladnosc.setText("Range: " + seekBar.getProgress() + "km");
+                    accuracy.setText("Range: " + seekBar.getProgress() + "km");
                     if(seekBar.getProgress() == 0){
-                        dokladnosc.setText("No range limit");
+                        accuracy.setText("No range limit");
                     }
                     range = Integer.toUnsignedLong(progress);
                 }
 
                 public void onStartTrackingTouch(SeekBar seekBar) {
-                    dokladnosc.setText("Range: " + seekBar.getProgress() + "km");
+                    accuracy.setText("Range: " + seekBar.getProgress() + "km");
                     if(seekBar.getProgress() == 0){
-                        dokladnosc.setText("No range limit");
+                        accuracy.setText("No range limit");
                     }
                     range = Integer.toUnsignedLong(seekBar.getProgress());
                 }
 
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    dokladnosc.setText("Range: " + seekBar.getProgress() + "km");
+                    accuracy.setText("Range: " + seekBar.getProgress() + "km");
                     if(seekBar.getProgress() == 0){
-                        dokladnosc.setText("No range limit");
+                        accuracy.setText("No range limit");
                     }
                     range = Integer.toUnsignedLong(seekBar.getProgress());
                 }
 
             });
-            stworzDruzyne.setOnClickListener(new View.OnClickListener() {
+            createTeamButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view)
                 {
@@ -366,7 +356,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                             Dialog dialogView = (Dialog) dialog;
                                             EditText name = (EditText)dialogView.findViewById(R.id.groupname);
                                             try{
-                                                userName = (TextView) rootView.findViewById(R.id.inputNickText);
+                                                userName = (TextView) rootView.findViewById(R.id.inputNickTextId);
                                                 userName.setText(user.getName());
                                                 userName.invalidate();
                                                 user.setName(userName.getText().toString());
@@ -396,7 +386,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                             EditText name=(EditText)dialogView.findViewById(R.id.groupname);
                                             EditText password=(EditText)dialogView.findViewById(R.id.password);
                                             try{
-                                                userName = (TextView) rootView.findViewById(R.id.inputNickText);
+                                                userName = (TextView) rootView.findViewById(R.id.inputNickTextId);
                                                 userName.setText(user.getName());
                                                 userName.invalidate();
                                                 user.setName(userName.getText().toString());
@@ -435,7 +425,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
             });
 
-            szukajDruzyny.setOnClickListener(new View.OnClickListener() {
+            findTeamButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view)
                 {
@@ -452,13 +442,13 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                     }
                                 });
                                 publicGroupsInit();
-                                listaGrup = rootView.findViewById(R.id.groupList);
+                                groupsView = rootView.findViewById(R.id.groupListId);
                                 adapter = new RecyclerViewAdapter(context, FunHolder.getPublicGroupNames());
-                                System.out.println("MainActivity szukajDruzyny: " + FunHolder.getPublicGroupNames());
+                                System.out.println("MainActivity findTeamButton: " + FunHolder.getPublicGroupNames());
                                 adapter.setClickListener(listenerContext);
                                 adapter.notifyDataSetChanged();
-                                listaGrup.setAdapter(adapter);
-                                listaGrup.invalidate();
+                                groupsView.setAdapter(adapter);
+                                groupsView.invalidate();
                                 break;
                             }
                             case 3:{
@@ -469,12 +459,12 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                     }
                                 });
                                 privateGroupsInit();
-                                listaGrupPrywatnych = rootView.findViewById(R.id.privateGroupList);
+                                privateGroupsView = rootView.findViewById(R.id.privateGroupListId);
                                 adapter = new RecyclerViewAdapter(context, FunHolder.getPrivateGroupNames());
                                 adapter.setClickListener(listenerContext);
                                 adapter.notifyDataSetChanged();
-                                listaGrup.setAdapter(adapter);
-                                listaGrup.invalidate();
+                                groupsView.setAdapter(adapter);
+                                groupsView.invalidate();
                                 break;
                             }
                         }
@@ -484,7 +474,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
             });
 
-            buttonInfo.setOnClickListener(new View.OnClickListener() {
+            informationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view)
                 {
@@ -508,7 +498,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
             });
 
-            zmienNick.setOnClickListener(new View.OnClickListener() {
+            changeNickButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view)
                 {
@@ -524,7 +514,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                             }else if(name.getText().toString().length()>11){
                                                 throw new TooLongNameException("Name should have less than 12 characters.");
                                             }else{
-                                                    userName = (TextView) rootView.findViewById(R.id.inputNickText);
+                                                    userName = (TextView) rootView.findViewById(R.id.inputNickTextId);
                                                     userName.setText(name.getText().toString());
                                                     userName.invalidate();
                                                     user.setName(name.getText().toString());
@@ -556,30 +546,30 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                 case 1:{
                     FunHolder.initInfo();
                     navigation.setSelectedItemId(R.id.home);
-                    dokladnosc.setVisibility(View.INVISIBLE);
-                    listaGrup.setVisibility(View.INVISIBLE);
-                    listaGrupPrywatnych.setVisibility(View.INVISIBLE);
+                    accuracy.setVisibility(View.INVISIBLE);
+                    groupsView.setVisibility(View.INVISIBLE);
+                    privateGroupsView.setVisibility(View.INVISIBLE);
                     break;
                 }
                 case 2:{
                     FunHolder.initGroups();
-                    typGrupy.setText("Public groups");
+                    groupType.setText("Public groups");
                     navigation.setSelectedItemId(R.id.public_groups);
-                    dokladnosc.setVisibility(View.VISIBLE);
-                    listaGrup.setVisibility(View.VISIBLE);
-                    listaGrupPrywatnych.setVisibility(View.INVISIBLE);
-                    listaGrup = rootView.findViewById(R.id.groupList);
+                    accuracy.setVisibility(View.VISIBLE);
+                    groupsView.setVisibility(View.VISIBLE);
+                    privateGroupsView.setVisibility(View.INVISIBLE);
+                    groupsView = rootView.findViewById(R.id.groupListId);
                     publicGroupsInit();
                     break;
                 }
                 case 3:{
                     FunHolder.initGroups();
-                    typGrupy.setText("Private groups");
+                    groupType.setText("Private groups");
                     navigation.setSelectedItemId(R.id.private_groups);
-                    dokladnosc.setVisibility(View.VISIBLE);
-                    listaGrup.setVisibility(View.INVISIBLE);
-                    listaGrupPrywatnych.setVisibility(View.VISIBLE);
-                    listaGrupPrywatnych = rootView.findViewById(R.id.privateGroupList);
+                    accuracy.setVisibility(View.VISIBLE);
+                    groupsView.setVisibility(View.INVISIBLE);
+                    privateGroupsView.setVisibility(View.VISIBLE);
+                    privateGroupsView = rootView.findViewById(R.id.privateGroupListId);
                     privateGroupsInit();
                     break;
                 }
@@ -636,29 +626,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                         }
 
                     }
-//                    for(PublicGroup g:publicGroupList.get(key)){
-//                        try{
-//                            if(g != null && g.toStringRepresentation().equals(adapter.getItem(position))) {
-//                                    user.setName(userName.getText().toString());
-//                                    groupName = g.getName();
-//                                    //currentId = g.getGroupId();
-//                                    if (g.addUser(user)) {
-//                                        isPublic = true;
-//                                        currentPublicGroup = g;
-//                                        changeActivity();
-//                                    }
-//                            }
-//                        }catch (IndexOutOfBoundsException e){
-//                            Toast.makeText(this, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
-//                            e.getMessage();
-//                        }catch (SameNameUserException e){
-//                            Toast.makeText(MainActivity.context, "User with same name is present in the group, please change your name", Toast.LENGTH_LONG).show();
-//                            e.getMessage();
-//                        }catch (Exception e){
-//                            Toast.makeText(this, "Please refresh the group list.", Toast.LENGTH_SHORT).show();
-//                            e.getMessage();
-//                        }
-//                    }
+
                 }else{
                     Toast.makeText(this, "The group is too far away!", Toast.LENGTH_SHORT).show();
                 }
@@ -717,17 +685,16 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
     }
 
     private static void publicGroupsInit(){
-        listaGrup.setLayoutManager(new LinearLayoutManager(context));
-        //publicGroupList.removeIf(x -> x.equals("null null"));
+        groupsView.setLayoutManager(new LinearLayoutManager(context));
     }
 
     private static void privateGroupsInit(){
-        listaGrupPrywatnych.setLayoutManager(new LinearLayoutManager(context));
-        adapterPrywatnych = new RecyclerViewAdapter(context, FunHolder.getPrivateGroupNames());
-        adapterPrywatnych.setClickListener(listenerContext);
-        adapterPrywatnych.notifyDataSetChanged();
-        listaGrupPrywatnych.setAdapter(adapterPrywatnych);
-        listaGrupPrywatnych.invalidate();
+        privateGroupsView.setLayoutManager(new LinearLayoutManager(context));
+        privateAdapter = new RecyclerViewAdapter(context, FunHolder.getPrivateGroupNames());
+        privateAdapter.setClickListener(listenerContext);
+        privateAdapter.notifyDataSetChanged();
+        privateGroupsView.setAdapter(privateAdapter);
+        privateGroupsView.invalidate();
     }
 
     private static void changeActivity() {
@@ -879,6 +846,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                             while (it.hasNext()) {
                                 Map.Entry pairs = (Map.Entry) it.next();
                                 //System.out.println("SETBUF = " + pairs.getValue());
+                                if(!setBuf.containsAll((TreeSet)pairs.getValue()))
                                 setBuf.addAll((TreeSet)pairs.getValue());
                                 System.out.println("SETBUF = " + setBuf);
                             }

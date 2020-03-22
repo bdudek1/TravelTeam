@@ -77,12 +77,12 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     private static RecyclerViewAdapter.ItemClickListener listenerContext;
     private static RecyclerViewAdapterChat.ItemClickListener listenerContextChat;
     private static BottomNavigationView navigation;
-    static TextView tytul;
-    static TextView nazwaGrupy;
+    static TextView title;
+    static TextView groupNameText;
     static EditText messageEtext;
     public static FloatingActionButton sendButton;
-    public static RecyclerView chat;
-    public static RecyclerView listaUzytkownikow;
+    public static RecyclerView chatView;
+    public static RecyclerView usersListView;
     private static RecyclerViewAdapter adapter;
     private static RecyclerViewAdapterChat adapterChat;
     private static List<Message> messages;
@@ -217,25 +217,25 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             }
 
             mapFragment = (SupportMapFragment) getChildFragmentManager()
-                    .findFragmentById(R.id.mapView);
+                    .findFragmentById(R.id.mapViewId);
             mapFragment.getMapAsync(mapCallback);
 
-            navigation = rootView.findViewById(R.id.bottomNavigationInGroup);
+            navigation = rootView.findViewById(R.id.bottomNavigationInGroupId);
             navigation.setSelectedItemId(R.id.users_list);
             FunHolder.adjustGravity(navigation);
             navigation.setOnClickListener(null);
-            messageEtext = rootView.findViewById(R.id.sendMessage);
-            sendButton = rootView.findViewById(R.id.sendButton);
-            chat = rootView.findViewById(R.id.recyclerChat);
-            tytul = rootView.findViewById(R.id.textTitle);
-            tytul.setTextSize(32);
-            nazwaGrupy = rootView.findViewById(R.id.groupName);
-            nazwaGrupy.setTextSize(18);
-            nazwaGrupy.setText(MainActivity.groupName);
-            listaUzytkownikow = rootView.findViewById(R.id.recyclerUsersList);
-            chat = rootView.findViewById(R.id.recyclerChat);
-            listaUzytkownikow.setLayoutManager(new LinearLayoutManager(context));
-            chat.setLayoutManager(new LinearLayoutManager(context));
+            messageEtext = rootView.findViewById(R.id.sendMessageId);
+            sendButton = rootView.findViewById(R.id.sendButtonId);
+            chatView = rootView.findViewById(R.id.recyclerChatId);
+            title = rootView.findViewById(R.id.textTitleId);
+            title.setTextSize(32);
+            groupNameText = rootView.findViewById(R.id.groupNameId);
+            groupNameText.setTextSize(18);
+            groupNameText.setText(MainActivity.groupName);
+            usersListView = rootView.findViewById(R.id.recyclerUsersListId);
+            chatView = rootView.findViewById(R.id.recyclerChatId);
+            usersListView.setLayoutManager(new LinearLayoutManager(context));
+            chatView.setLayoutManager(new LinearLayoutManager(context));
             adapterChat = new RecyclerViewAdapterChat(context, new ArrayList<SpannableString>());
             LinkedHashSet<String> hashSet;
             if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
@@ -251,9 +251,9 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             adapter = new RecyclerViewAdapter(context, listWithoutDuplicates);
             adapter.setClickListener(listenerContext);
             adapterChat.setClickListener(listenerContextChat);
-            DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(listaUzytkownikow.getContext(),
+            DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(usersListView.getContext(),
                     getResources().getConfiguration().orientation);
-            listaUzytkownikow.addItemDecoration(dividerItemDecoration);
+            usersListView.addItemDecoration(dividerItemDecoration);
 
 
             for (int i = 0; i < navigation.getMenu().size(); i++) {
@@ -303,16 +303,16 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                             adapterChat = new RecyclerViewAdapterChat(context, spannableMessages);
                             adapterChat.setClickListener(listenerContextChat);
                             adapterChat.notifyDataSetChanged();
-                            chat.setAdapter(adapterChat);
-                            chat.invalidate();
+                            chatView.setAdapter(adapterChat);
+                            chatView.invalidate();
                         }
                     }else if(FunHolder.getCurrentPrivateGroup()!=null){
                         if(FunHolder.getCurrentPrivateGroup().getMessages()!=null){
                             adapterChat = new RecyclerViewAdapterChat(context, spannableMessages);
                             adapterChat.setClickListener(listenerContextChat);
                             adapterChat.notifyDataSetChanged();
-                            chat.setAdapter(adapterChat);
-                            chat.invalidate();
+                            chatView.setAdapter(adapterChat);
+                            chatView.invalidate();
                         }
                     }
 
@@ -343,10 +343,15 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     for(DataSnapshot d:dataChildren){
                         try{
                             if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
+                                if(!FunHolder.getCurrentPublicGroup().getUserList().values().contains(d.getValue(User.class)))
                                 FunHolder.getCurrentPublicGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
+                                System.out.println("IN DATACHANGE USER LIST" + FunHolder.getCurrentPublicGroup().getUserList());
+
                             }else if(FunHolder.getCurrentPrivateGroup()!=null){
+                                if(!FunHolder.getCurrentPrivateGroup().getUserList().values().contains(d.getValue(User.class)))
                                 FunHolder.getCurrentPrivateGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
                             }
+
                         }catch(Exception e){
                             e.getMessage();
                         }
@@ -355,7 +360,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
                     try{
                         mapFragment = (SupportMapFragment) getChildFragmentManager()
-                                .findFragmentById(R.id.mapView);
+                                .findFragmentById(R.id.mapViewId);
                         mapFragment.getMapAsync(mapCallback);
                     }catch(IllegalStateException e){
                         e.getMessage();
@@ -400,8 +405,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         adapter = new RecyclerViewAdapter(context, listWithoutDuplicates);
                         adapter.setClickListener(listenerContext);
                         adapter.notifyDataSetChanged();
-                        listaUzytkownikow.setAdapter(adapter);
-                        listaUzytkownikow.invalidate();
+                        usersListView.setAdapter(adapter);
+                        usersListView.invalidate();
 
 
                     }catch(NullPointerException e){
@@ -420,7 +425,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
             sendButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    messageEtext = rootView.findViewById(R.id.sendMessage);
+                    messageEtext = rootView.findViewById(R.id.sendMessageId);
                     messageEtext.invalidate();
                     if(messageEtext.getText().toString().equals("")){
                         Toast.makeText(context, "Please enter message.", Toast.LENGTH_SHORT).show();
@@ -439,18 +444,18 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                 case 1: {
                     FunHolder.initUsersList();
                     navigation.setSelectedItemId(R.id.users_list);
-                    tytul.setText("Users list");
+                    title.setText("Users list");
                     adapter.setClickListener(listenerContext);
                     adapter.notifyDataSetChanged();
-                    listaUzytkownikow.setLayoutManager(new LinearLayoutManager(context));
-                    listaUzytkownikow.setAdapter(adapter);
-                    listaUzytkownikow.invalidate();
+                    usersListView.setLayoutManager(new LinearLayoutManager(context));
+                    usersListView.setAdapter(adapter);
+                    usersListView.invalidate();
                     break;
                 }
                 case 2: {
                     FunHolder.initMap();
                     navigation.setSelectedItemId(R.id.mapV);
-                    tytul.setText("Map");
+                    title.setText("Map");
                     break;
                 }
                 case 3: {
@@ -458,11 +463,11 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     adapterChat = new RecyclerViewAdapterChat(context, spannableMessages);
                     adapterChat.setClickListener(listenerContextChat);
                     adapterChat.notifyDataSetChanged();
-                    chat.setLayoutManager(new LinearLayoutManager(context));
-                    chat.setAdapter(adapterChat);
-                    chat.invalidate();
+                    chatView.setLayoutManager(new LinearLayoutManager(context));
+                    chatView.setAdapter(adapterChat);
+                    chatView.invalidate();
                       navigation.setSelectedItemId(R.id.chat);
-                      tytul.setText("Chat");
+                      title.setText("Chat");
                     break;
                 }
 

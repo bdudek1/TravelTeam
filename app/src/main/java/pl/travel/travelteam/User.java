@@ -76,7 +76,7 @@ public class User implements Comparable<User>{
         if (!(o instanceof User)) {
             return false;
         }
-        if(((User) o).getName().equals(this.name)){
+        if(((User) o).getName().equals(getName())){
             return true;
         }else{
             return false;

@@ -8,11 +8,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @IgnoreExtraProperties
 public class PublicGroup implements Comparable<PublicGroup> {
@@ -81,8 +84,10 @@ public class PublicGroup implements Comparable<PublicGroup> {
             for(User u:userList.values()){
                 if(Integer.valueOf(user.getUserNumber()) < Integer.valueOf(u.getUserNumber())){
                     u.setUserNumber(Integer.toString(Integer.valueOf(u.getUserNumber()) - 1));
+                    if(!userListBuf.containsValue(u))
                     userListBuf.put(u.getUserNumber(), u);
                 }else{
+                    if(!userListBuf.containsValue(u))
                     userListBuf.put(u.getUserNumber(), u);
                 }
 

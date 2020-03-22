@@ -8,7 +8,7 @@
     tools:context=".ui.group.GroupFragment">
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigationInGroup"
+        android:id="@+id/bottomNavigationInGroupId"
         android:layout_width="0dp"
         android:layout_height="40dp"
         android:persistentDrawingCache="none"
@@ -24,7 +24,7 @@
         android:contextClickable="false"/>
 
     <TextView
-        android:id="@+id/textTitle"
+        android:id="@+id/textTitleId"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -34,31 +34,31 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerUsersList"
+        android:id="@+id/recyclerUsersListId"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="30dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="30dp"
-        app:layout_constraintBottom_toTopOf="@+id/sendMessage"
+        app:layout_constraintBottom_toTopOf="@+id/sendMessageId"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textTitle"
+        app:layout_constraintTop_toBottomOf="@+id/textTitleId"
         app:layout_constraintVertical_bias="0.222" />
 
     <TextView
-        android:id="@+id/groupName"
+        android:id="@+id/groupNameId"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginBottom="16dp"
         android:text="TextView"
-        app:layout_constraintBottom_toTopOf="@+id/textTitle"
+        app:layout_constraintBottom_toTopOf="@+id/textTitleId"
         app:layout_constraintStart_toStartOf="parent" />
 
     <EditText
-        android:id="@+id/sendMessage"
+        android:id="@+id/sendMessageId"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -66,37 +66,37 @@
         android:ems="10"
         android:inputType="textPersonName"
         android:hint="Send message..."
-        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationInGroup"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationInGroupId"
         app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerChat"
+        android:id="@+id/recyclerChatId"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="30dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="30dp"
-        app:layout_constraintBottom_toTopOf="@+id/sendMessage"
+        app:layout_constraintBottom_toTopOf="@+id/sendMessageId"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textTitle"
+        app:layout_constraintTop_toBottomOf="@+id/textTitleId"
         app:layout_constraintVertical_bias="0.222" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/sendButton"
+        android:id="@+id/sendButtonId"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:clickable="true"
         android:src="@android:drawable/ic_menu_send"
-        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationInGroup"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationInGroupId"
         app:layout_constraintEnd_toEndOf="parent" />
 
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/mapView"
+        android:id="@+id/mapViewId"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -104,9 +104,9 @@
         android:layout_marginTop="30dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="30dp"
-        app:layout_constraintBottom_toBottomOf="@+id/recyclerChat"
+        app:layout_constraintBottom_toBottomOf="@+id/recyclerChatId"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/textTitleId" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

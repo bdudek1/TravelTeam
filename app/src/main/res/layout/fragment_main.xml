@@ -8,7 +8,7 @@
     tools:context=".MainActivity$PlaceholderFragment">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/privateGroupList"
+        android:id="@+id/privateGroupListId"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
@@ -16,13 +16,13 @@
         android:layout_marginEnd="16dp"
 
         android:layout_marginBottom="30dp"
-        app:layout_constraintBottom_toTopOf="@+id/dokladnosc"
+        app:layout_constraintBottom_toTopOf="@+id/accuracyId"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lotekName" />
+        app:layout_constraintTop_toBottomOf="@+id/groupTypeId" />
 
     <Button
-        android:id="@+id/createTeam"
+        android:id="@+id/createTeamId"
         style="@style/AppTheme.Button"
         android:layout_width="100dp"
         android:layout_height="59dp"
@@ -33,7 +33,7 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/seekForTeam"
+        android:id="@+id/seekForTeamId"
         style="@style/AppTheme.Button"
         android:layout_width="100dp"
         android:layout_height="59dp"
@@ -44,7 +44,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <SeekBar
-        android:id="@+id/rangeBar"
+        android:id="@+id/rangeBarId"
         style="@style/Widget.AppCompat.SeekBar"
         android:layout_width="0dp"
         android:layout_height="30dp"
@@ -53,42 +53,42 @@
         android:layout_marginBottom="30dp"
         android:max="250"
         android:progress="0"
-        app:layout_constraintBottom_toTopOf="@+id/createTeam"
+        app:layout_constraintBottom_toTopOf="@+id/createTeamId"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/dokladnosc"
+        android:id="@+id/accuracyId"
         android:layout_width="wrap_content"
         android:layout_height="28dp"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginBottom="14dp"
         android:text="Range:"
-        app:layout_constraintBottom_toTopOf="@+id/rangeBar"
+        app:layout_constraintBottom_toTopOf="@+id/rangeBarId"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/lotekName"
+        android:id="@+id/groupTypeId"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="25dp"
-        android:text="JakiśLotek"
+        android:text="default"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/opis"
+        android:id="@+id/welcomeId"
         android:layout_width="323dp"
         android:layout_height="100dp"
         android:layout_marginStart="16dp"
         android:text='Welcome to Travel Team. Slide left to start using or click "Information" for a quick tutorial.'
-        app:layout_constraintBottom_toTopOf="@+id/buttonInformacje"
+        app:layout_constraintBottom_toTopOf="@+id/informationButtonId"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/buttonInformacje"
+        android:id="@+id/informationButtonId"
         style="@style/AppTheme.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -102,7 +102,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/wprowadzNick"
+        android:id="@+id/enterNickId"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -113,7 +113,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/groupList"
+        android:id="@+id/groupListId"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
@@ -121,15 +121,15 @@
         android:layout_marginEnd="16dp"
 
         android:layout_marginBottom="30dp"
-        app:layout_constraintBottom_toTopOf="@+id/dokladnosc"
+        app:layout_constraintBottom_toTopOf="@+id/accuracyId"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lotekName">
+        app:layout_constraintTop_toBottomOf="@+id/groupTypeId">
 
     </androidx.recyclerview.widget.RecyclerView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigation"
+        android:id="@+id/bottomNavigationId"
         android:layout_width="0dp"
         android:layout_height="40dp"
         android:persistentDrawingCache="none"
@@ -145,7 +145,7 @@
         android:contextClickable="false"/>
 
     <TextView
-        android:id="@+id/inputNickText"
+        android:id="@+id/inputNickTextId"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -155,7 +155,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/buttonChangeName"
+        android:id="@+id/buttonChangeNameId"
         style="@style/AppTheme.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -163,7 +163,7 @@
         android:layout_marginEnd="8dp"
         android:text="Change user name"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/inputNickText" />
+        app:layout_constraintTop_toBottomOf="@+id/inputNickTextId" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
