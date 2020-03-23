@@ -85,15 +85,16 @@ public class PublicGroup implements Comparable<PublicGroup> {
             if(userList.remove(user.getUserNumber(), user))
                 user.setRemoved(true);
             for(User u:userList.values()){
-                if(Integer.valueOf(user.getUserNumber()) < Integer.valueOf(u.getUserNumber()) && !u.equals(user)){
-                    u.setUserNumber(Integer.toString(Integer.valueOf(u.getUserNumber()) - 1));
-                    if(!userListBuf.containsValue(u))
+//                if(Integer.valueOf(user.getUserNumber()) <= Integer.valueOf(u.getUserNumber()) && !u.equals(user)){
+//                    //u.setUserNumber(Integer.toString(Integer.valueOf(u.getUserNumber()) - 1));
+//                    if(!userListBuf.containsValue(u) && !u.equals(user))
+//                    userListBuf.put(u.getUserNumber(), u);
+//                }else if(!u.equals(user)){
+//                    if(!userListBuf.containsValue(u))
+//                    userListBuf.put(u.getUserNumber(), u);
+//                }
+                if(!userListBuf.containsValue(u) && !u.equals(user))
                     userListBuf.put(u.getUserNumber(), u);
-                }else if(!u.equals(user)){
-                    if(!userListBuf.containsValue(u))
-                    userListBuf.put(u.getUserNumber(), u);
-                }
-
             }
 //            System.out.println("//////////////////////////////////////");
 //            for(User u: userListBuf.values()){

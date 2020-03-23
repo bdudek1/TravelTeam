@@ -92,10 +92,10 @@ public class User implements Comparable<User>{
 
     @Override
     public boolean equals(Object o){
-        if (!(o instanceof User)) {
+        if (o == null || !(o instanceof User)) {
             return false;
         }
-        if(((User) o).getName().equals(getName())){
+        if(((User)o)!=null && ((User) o).getName().equals(getName())){
             return true;
         }else{
             return false;

@@ -41,6 +41,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.Settings;
 import android.text.SpannableString;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -61,57 +62,71 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.single.PermissionListener;
 
 
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.TreeSet;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
 
 import static pl.travel.travelteam.MainActivity.database;
 
 
 public class GroupActivity extends AppCompatActivity implements RecyclerViewAdapter.ItemClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
-    private static Context context;
+    static private Context context;
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private static RecyclerViewAdapter.ItemClickListener listenerContext;
     private static RecyclerViewAdapterChat.ItemClickListener listenerContextChat;
     private static BottomNavigationView navigation;
-    static TextView title;
-    static TextView groupNameText;
+    static private TextView title;
+    static  private TextView groupNameText;
     static EditText messageEtext;
-    public static FloatingActionButton sendButton;
-    public static RecyclerView chatView;
-    public static RecyclerView usersListView;
+    static FloatingActionButton sendButton;
+    static RecyclerView chatView;
+    static RecyclerView usersListView;
     private static RecyclerViewAdapter adapter;
     private static RecyclerViewAdapterChat adapterChat;
     private static List<Message> messages;
     private static List<SpannableString> spannableMessages;
     private static List<String> users;
-    public static String groupsReference;
+    static String groupsReference;
     private static GoogleMap mMap;
     private static OnMapReadyCallback mapCallback;
-    public static SupportMapFragment mapFragment;
-    public final static List<Message> msgsBuf = new ArrayList<>();
+    static SupportMapFragment mapFragment;
+    final static List<Message> msgsBuf = new ArrayList<>();
 
     private static GoogleApiClient mGoogleApiClient;
-    private static Location mLocation;
+    private Location mLocation;
     private static LocationManager mLocationManager;
-    private static LocationRequest mLocationRequest;
+    private LocationRequest mLocationRequest;
     private static com.google.android.gms.location.LocationListener listener;
-    private static long UPDATE_INTERVAL = 1500;  /* 10 secs */
-    private static long FASTEST_INTERVAL = 7500; /* 20 sec */
+    private long UPDATE_INTERVAL = 1500;  /* 10 secs */
+    private long FASTEST_INTERVAL = 7500; /* 20 sec */
 
     private static LatLng latLng;
     private static boolean isPermission;
     private static boolean isMapReady = false;
     public static DatabaseReference messageRef;
     public static DatabaseReference userRef;
-    private static DatabaseReference messageCounterRef;
+    private DatabaseReference messageCounterRef;
 
 
     static ValueEventListener usersListener;
     static ValueEventListener messagesListener;
+
+    private static Cipher cipher;
+    private static Key key;
+    private static KeyGenerator keyGen;
 
     private static final String MAP_VIEW_BUNDLE_KEY = "xxxxxx";
 
@@ -188,6 +203,22 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
             checkLocation();
         }
+
+        try{
+            cipher = Cipher.getInstance("AES");
+            keyGen = KeyGenerator.getInstance("AES");
+            keyGen.init(128);  // Key size
+            key = keyGen.generateKey();
+
+        }catch(NoSuchAlgorithmException | NoSuchPaddingException e){
+            System.out.println(e.getMessage());
+        }
+        try{
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+        }catch(InvalidKeyException e){
+            System.out.println(e.getMessage());
+        }
+
     }
     public static class PlaceholderFragment extends Fragment {
 
@@ -280,8 +311,18 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                             FunHolder.getCurrentPrivateGroup().getMessages().add(d.getValue(Message.class));
                         }
 
-                        messages.add(d.getValue(Message.class));
-                        spannableMessages.add(d.getValue(Message.class).toSpannableString());
+                        try{
+
+                            messages.add(new Message(decodeMessage(d.getValue(Message.class).toString())));
+                            spannableMessages.add(new Message(decodeMessage((d.getValue(Message.class)).toString())).toSpannableString());
+                        }catch(InvalidKeyException | InvalidAlgorithmParameterException |
+                                BadPaddingException | IllegalBlockSizeException e){
+                            System.out.println(e.getClass());
+                            System.out.println(e.getMessage());
+                            messages.add(d.getValue(Message.class));
+                            spannableMessages.add(d.getValue(Message.class).toSpannableString());
+                        }
+
                     }
                     if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
                         FunHolder.getCurrentPublicGroup().setMessageCounter(messages.size());
@@ -431,9 +472,26 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         Toast.makeText(context, "Please enter message.", Toast.LENGTH_SHORT).show();
                     }else{
                         if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
-                            FunHolder.getCurrentPublicGroup().addMessage(new Message(MainActivity.user , messageEtext.getText().toString()));
+                            try{
+//                                FunHolder.getCurrentPublicGroup().addMessage(new Message(MainActivity.user ,
+//                                        cipher.doFinal(messageEtext.getText().toString().getBytes()).toString()));
+                                FunHolder.getCurrentPublicGroup().addMessage(new Message(MainActivity.user ,
+                                        codeMessage(messageEtext.getText().toString())));
+                            }catch(BadPaddingException | IllegalBlockSizeException | InvalidKeyException e){
+                                FunHolder.getCurrentPublicGroup().addMessage(new Message(MainActivity.user ,
+                                       messageEtext.getText().toString()));
+                                System.out.println(e.getMessage());
+                            }
+
                         }else if(FunHolder.getCurrentPrivateGroup()!=null){
-                            FunHolder.getCurrentPrivateGroup().addMessage(new Message(MainActivity.user , messageEtext.getText().toString()));
+                            try{
+                                FunHolder.getCurrentPrivateGroup().addMessage(new Message(MainActivity.user ,
+                                        cipher.doFinal(messageEtext.getText().toString().getBytes()).toString()));
+                            }catch(BadPaddingException | IllegalBlockSizeException e){
+                                FunHolder.getCurrentPrivateGroup().addMessage(new Message(MainActivity.user ,
+                                        messageEtext.getText().toString()));
+                                System.out.println(e.getMessage());
+                            }
                         }
                         messageEtext.setText("");
                         messageEtext.invalidate();
@@ -549,9 +607,11 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         System.out.println("LAT LNG = " + u.getLatLng());
                         mMap.addMarker(new MarkerOptions()
                                 .position(u.getLatLng())
-                                .title(u.getName())
+                                .title(u.getName().equals(MainActivity.user.getName()) ? u.getName() + " (You)" : u.getName())
                                 .snippet(s)
-                                .icon(u.getName().equals(MainActivity.user.getName()) ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                                .icon(u.getName().equals(MainActivity.user.getName()) ?
+                                        BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):
+                                        BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
                     }
 
                 }
@@ -566,15 +626,19 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     if(u!=null && u.getName().equals(MainActivity.user.getName()) && FunHolder.getDistance(u.getLatLng(), MainActivity.user.getLatLng()) == 0){
                         mMap.addMarker(new MarkerOptions()
                                 .position(u.getLatLng())
-                                .title(u.getName())
+                                .title(u.getName().equals(MainActivity.user.getName()) ? u.getName() + " (You)" : u.getName())
                                 .snippet(s)
-                                .icon(u.getName().equals(MainActivity.user.getName()) ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                                .icon(u.getName().equals(MainActivity.user.getName())
+                                        ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+                                        :BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
                     }else if(u!=null && !u.getName().equals(MainActivity.user.getName())){
                         mMap.addMarker(new MarkerOptions()
                                 .position(u.getLatLng())
-                                .title(u.getName())
+                                .title(u.getName().equals(MainActivity.user.getName()) ? u.getName() + " (You)" : u.getName())
                                 .snippet(s)
-                                .icon(u.getName().equals(MainActivity.user.getName()) ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                                .icon(u.getName().equals(MainActivity.user.getName())
+                                        ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+                                        :BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
                     }
 
                 }
@@ -587,7 +651,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
             return;
         }
@@ -633,7 +698,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                 .setInterval(UPDATE_INTERVAL)
                 .setFastestInterval(FASTEST_INTERVAL);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
@@ -729,7 +795,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                 .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                 .withListener(new PermissionListener() {
                     @Override
-                    public void onPermissionRationaleShouldBeShown(com.karumi.dexter.listener.PermissionRequest permission, PermissionToken token) {
+                    public void onPermissionRationaleShouldBeShown(com.karumi.dexter.listener.PermissionRequest permission,
+                                                                   PermissionToken token) {
                         token.continuePermissionRequest();
                     }
 
@@ -776,6 +843,34 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             FunHolder.setCurrentPrivateGroup(null);
         }
         super.onDestroy();
+    }
+
+    public static String decodeMessage(String msg) throws InvalidAlgorithmParameterException,
+            InvalidKeyException, BadPaddingException, IllegalBlockSizeException{
+        System.out.println("BEFORE CIPHER INIT = ");
+
+        cipher.init(Cipher.DECRYPT_MODE,key, cipher.getParameters());
+        System.out.println("1");
+        String msgBeforeUser = msg
+                .substring(0, msg
+                        .toString().indexOf(' '));
+        System.out.println("2");
+        String msgAfterUser = new String (cipher.doFinal(Base64.decode((msg
+                .substring(msg.indexOf(' ')+1)).getBytes(), Base64.DEFAULT)));
+//                            String msgAfterUser = cipher.doFinal((d.getValue(Message.class).toString()
+//                                    .substring(d.getValue(Message.class)
+//                                            .toString().indexOf(' '))).getBytes()).toString();
+        System.out.println("3");
+        msgAfterUser=new String(Base64.decode(msgAfterUser,Base64.NO_PADDING));
+        System.out.println("msgBeforeUser = " + msgBeforeUser);
+        System.out.println("msgAfterUser = " + msgAfterUser);
+        return msgBeforeUser + msgAfterUser;
+    }
+
+    public static String codeMessage(String msg) throws InvalidKeyException, BadPaddingException,
+            IllegalBlockSizeException{
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        return cipher.doFinal(msg.getBytes()).toString();
     }
 
 }
