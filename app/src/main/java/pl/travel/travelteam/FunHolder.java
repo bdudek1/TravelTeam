@@ -1,38 +1,15 @@
 package pl.travel.travelteam;
 
 import android.location.Location;
-import android.util.Base64;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-
 import com.google.android.gms.maps.model.LatLng;
-
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.spec.SecretKeySpec;
-
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 public class FunHolder {
     public static void initInfo() {
@@ -132,25 +109,6 @@ public class FunHolder {
             return buf;
         }
     }
-
-//    public static List<String> getPrivateGroupNames() {
-//        List<String> names = new ArrayList<>();
-//        for (PrivateGroup g : MainActivity.privateGroupList.values()) {
-//            if (g.getName() != "" && g.getName() != null) {
-//                if (MainActivity.range == 0) {
-//                    names.add(g.toStringRepresentation());
-//                } else {
-//                    if (MainActivity.range > getDistance(MainActivity.user.getLatLng(), new LatLng(g.getLat(), g.getLon()))) {
-//                        names.add(g.toStringRepresentation());
-//                    }
-//                    ;
-//                }
-//            }
-//
-//
-//        }
-//        return names;
-//    }
 
     public static int getDistance(LatLng loc1, LatLng loc2) {
         Location l1 = new Location("buf");

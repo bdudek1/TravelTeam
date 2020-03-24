@@ -201,10 +201,6 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
   
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
@@ -350,9 +346,8 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                                 user = new User(user.getName());
                                                 groupName = name.getText().toString();
                                                 currentPublicGroup = new PublicGroup(name.getText().toString());
+                                                user.setRemoved(false);
                                                 currentPublicGroup.addUser(user);
-                                                currentPublicGroup.addUser(new User("KUZYN", 1.1, 2.2));
-                                                currentPublicGroup.addUser(new User("KUZYN2", 2.2, 1.1));
                                                 currentPublicGroup.setRange(range);
                                                 currentPublicGroup.setLat(user.getLat());
                                                 currentPublicGroup.setLon(user.getLon());
@@ -378,9 +373,8 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                                 user = new User(user.getName());
                                                 groupName = name.getText().toString();
                                                 currentPrivateGroup = new PrivateGroup(name.getText().toString(), password.getText().toString());
+                                                user.setRemoved(false);
                                                 currentPrivateGroup.addUser(user);
-                                                currentPrivateGroup.addUser(new User("KUZYN", 1.1, 2.2));
-                                                currentPrivateGroup.addUser(new User("KUZYN2", 2.2, 1.1));
                                                 currentPrivateGroup.setRange(range);
                                                 currentPrivateGroup.setLat(user.getLat());
                                                 currentPrivateGroup.setLon(user.getLon());
@@ -468,7 +462,8 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                     "When creating a group you can set the range so only people in the range will be able to join the group.\n" +
                                     "If you will not set the range before creating a group people from the whole earth will be able to join the group.\n" +
                                     "Private groups require a password to join them.\n" +
-                                    "In the group you can see other people on the map, check the distance between you and them and chat with them.")
+                                    "In the group you can see other people on the map, check the distance between you and them and chat with them.\n" +
+                                    "The application is safe. Messages and passwords are encrypted.")
                             .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 
                                 public void onClick(DialogInterface arg0, int arg1) {
@@ -518,7 +513,6 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
 
                                 }
                             });
-                    // Create the AlertDialog object and return it
                     builder.create();
                     builder.show();
                 }
@@ -576,19 +570,14 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                     while(it.hasNext()){
                         Map.Entry pairs = (Map.Entry) it.next();
                         Set<PublicGroup> publicGroupSet = new TreeSet<PublicGroup>();
-                        System.out.println("entrySet class : " + pairs.getValue().getClass());
                         for(Object g:(TreeSet)pairs.getValue()){
                             publicGroupSet.add((PublicGroup)g);
-                            System.out.println("G OBJECT GETCLASS = " + g.getClass());
-                            System.out.println("G OBJECT STRING VAL = " + g.toString());
                         }
                         for(PublicGroup publicGroup : publicGroupSet){
                             try{
-                                System.out.println("PG GROUP = " + publicGroup.toStringRepresentation());
-                                System.out.println("ADAPTER NAME = " + adapter.getItem(position));
                                 if(publicGroup != null && publicGroup.toStringRepresentation().equals(adapter.getItem(position))) {
                                     groupName = publicGroup.getName();
-                                    System.out.println("USERLIST SIZE BEFORE ADD = " + publicGroup.getUserList().size());
+                                    user.setRemoved(false);
                                     FunHolder.setCurrentPublicGroup(publicGroup);
                                     if (publicGroup.addUser(user)) {
                                         isPublic = true;
@@ -643,6 +632,7 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                                 if (privateGroup != null && privateGroup.toStringRepresentation().equals(adapter.getItem(position))) {
                                                     groupName = privateGroup.getName();
                                                     System.out.println("USERLIST SIZE BEFORE ADD = " + privateGroup.getUserList().size());
+                                                    user.setRemoved(false);
                                                     FunHolder.setCurrentPrivateGroup(privateGroup);
                                                     if (privateGroup.addUser(user, password.getText().toString())) {
                                                         isPublic = false;
@@ -730,43 +720,6 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
         }
     }
 
-//    private static void addPublicGroup(PublicGroup g){
-//        System.out.println("addPublicGroup gname: " + g.getName());
-//        publicGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()), new TreeSet<PublicGroup>());
-//        if(publicGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng())).add(g)){
-//            myRef.child("public_groups").child(g.getName()).setValue(g).addOnSuccessListener(new OnSuccessListener<Void>() {
-//                @Override
-//                public void onSuccess(Void aVoid) {
-//                }
-//            })
-//                    .addOnFailureListener(new OnFailureListener() {
-//                        @Override
-//                        public void onFailure(@NonNull Exception e) {
-//                        }
-//                    });
-//        }else{
-//            //GROUP EXISTS EXCEPTION
-//        }
-//
-//
-//    }
-//
-//
-//    private static void addPrivateGroup(PrivateGroup g){
-//        privateGroupList.put(FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()), g);
-//        myRef.child("private_groups").child(g.getName()).setValue(g).addOnSuccessListener(new OnSuccessListener<Void>() {
-//            @Override
-//            public void onSuccess(Void aVoid) {
-//            }
-//        })
-//                .addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                    }
-//                });
-//
-//    }
-
     private static void getPublicGroups(FirebaseCallback firebaseCallback){
         TreeSet<PublicGroup> setBuf = new TreeSet<>();
         Map<String, Integer> nameDistance = new HashMap<>();
@@ -830,14 +783,11 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                         groupParameters.add(g);
                     }
                         PublicGroup groupBuf = GroupFactory.getPublicGroup(groupParameters);
-                        //distBuf = FunHolder.getDistance(user.getLatLng(), groupBuf.getLatLng());
                         nameDistance.put(groupBuf.getName(), FunHolder.getDistance(user.getLatLng(), groupBuf.getLatLng())/1000);
                         if(!setBuf.contains(groupBuf))
                         setBuf.add(groupBuf);
-                        System.out.println("/////////////BUG/////////////////");
                 }
                 publicGroupList.putIfAbsent(distBuf, setBuf);
-                System.out.println("PUBLIC GROUP LIST = " + publicGroupList);
 
                 executorService = Executors.newSingleThreadExecutor();
                     futureNames = executorService.submit(new NamesHolder(){
@@ -846,23 +796,18 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                             Set<PublicGroup> setBuf = new TreeSet<>();
                             Set<String> buf =  new TreeSet<>();
                             Iterator it = publicGroupList.entrySet().iterator();
-                            System.out.println("ITERATOR = " + it);
                             while (it.hasNext()) {
                                 Map.Entry pairs = (Map.Entry) it.next();
-                                //System.out.println("SETBUF = " + pairs.getValue());
                                 if(!setBuf.containsAll((TreeSet)pairs.getValue()))
                                 setBuf.addAll((TreeSet)pairs.getValue());
-                                System.out.println("SETBUF = " + setBuf);
                             }
                             Long rangeGroup = 2L;
                             Long messagesCounter = 0L;
                             boolean gotMessages = false;
                             for(Object g:setBuf){
-                                System.out.println("Class: " + g.getClass());
                                 if(g instanceof java.lang.Long){
                                     if(!gotMessages){
                                         rangeGroup = (Long) g;
-                                        System.out.println("RANGE = " + rangeGroup);
                                         gotMessages = true;
                                     }else{
                                         messagesCounter = (Long) g;
@@ -871,23 +816,15 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                                 }
                                 if(g instanceof String && !g.toString().startsWith("default")){
                                     buf.add(g.toString() + ", " + nameDistance.get(g.toString()) + " km away");
-                                    System.out.println("MAP = " + nameDistance);
-                                    System.out.println("KEY = " + g.toString());
-                                    System.out.println("VAL = " + nameDistance.get(g.toString()));
                                 }
                                 if(!g.toString().startsWith("default"))
                                 buf.add(g.toString() + ", " + nameDistance.get(g.toString()) + " km away");
-                                System.out.println("MAP = " + nameDistance);
-                                System.out.println("KEY = " + g.toString());
-                                System.out.println("VAL = " + nameDistance.get(g.toString()));
                             }
-                            System.out.println("BUF = " + buf);
                             List<String> bufNames = new ArrayList<>();
                             buf.forEach(a->bufNames.add(a));
                             return bufNames;
                         }
                     });
-                    System.out.println("publicGroupList : " + publicGroupList);
                 firebaseCallback.onCallback(publicGroupList);
                 publicGroupsInit();
 
@@ -966,14 +903,11 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                         groupParameters.add(g);
                     }
                     PrivateGroup groupBuf = GroupFactory.getPrivateGroup(groupParameters);
-                    //distBuf = FunHolder.getDistance(user.getLatLng(), groupBuf.getLatLng());
                     nameDistance.put(groupBuf.getName(), FunHolder.getDistance(user.getLatLng(), groupBuf.getLatLng())/1000);
                     if(!setBuf.contains(groupBuf))
                         setBuf.add(groupBuf);
-                    System.out.println("/////////////BUG/////////////////");
                 }
                 privateGroupList.putIfAbsent(distBuf, setBuf);
-                System.out.println("PRIVATE GROUP LIST = " + privateGroupList);
 
                 executorService = Executors.newSingleThreadExecutor();
                 futureNames = executorService.submit(new NamesHolder(){
@@ -982,23 +916,18 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                         Set<PrivateGroup> setBuf = new TreeSet<>();
                         Set<String> buf =  new TreeSet<>();
                         Iterator it = privateGroupList.entrySet().iterator();
-                        System.out.println("ITERATOR = " + it);
                         while (it.hasNext()) {
                             Map.Entry pairs = (Map.Entry) it.next();
-                            //System.out.println("SETBUF = " + pairs.getValue());
                             if(!setBuf.containsAll((TreeSet)pairs.getValue()))
                                 setBuf.addAll((TreeSet)pairs.getValue());
-                            System.out.println("SETBUF = " + setBuf);
                         }
                         Long rangeGroup = 2L;
                         Long messagesCounter = 0L;
                         boolean gotMessages = false;
                         for(Object g:setBuf){
-                            System.out.println("Class: " + g.getClass());
                             if(g instanceof java.lang.Long){
                                 if(!gotMessages){
                                     rangeGroup = (Long) g;
-                                    System.out.println("RANGE = " + rangeGroup);
                                     gotMessages = true;
                                 }else{
                                     messagesCounter = (Long) g;
@@ -1007,23 +936,15 @@ final public class MainActivity extends AppCompatActivity implements RecyclerVie
                             }
                             if(g instanceof String && !g.toString().startsWith("default")){
                                 buf.add(g.toString() + ", " + nameDistance.get(g.toString()) + " km away");
-                                System.out.println("MAP = " + nameDistance);
-                                System.out.println("KEY = " + g.toString());
-                                System.out.println("VAL = " + nameDistance.get(g.toString()));
                             }
                             if(!g.toString().startsWith("default"))
                                 buf.add(g.toString() + ", " + nameDistance.get(g.toString()) + " km away");
-                            System.out.println("MAP = " + nameDistance);
-                            System.out.println("KEY = " + g.toString());
-                            System.out.println("VAL = " + nameDistance.get(g.toString()));
                         }
-                        System.out.println("BUF = " + buf);
                         List<String> bufNames = new ArrayList<>();
                         buf.forEach(a->bufNames.add(a));
                         return bufNames;
                     }
                 });
-                System.out.println("privateGroupList : " + privateGroupList);
                 firebaseCallback.onCallback(privateGroupList);
                 privateGroupsInit();
 

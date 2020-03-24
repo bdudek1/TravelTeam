@@ -37,15 +37,23 @@ public class User implements Comparable<User>{
         if(location.latitude != 0.0 && location.longitude != 0.0){
             this.locLat = location.latitude;
             this.locLon = location.longitude;
-            //
-            if(!isRemoved() && MainActivity.isPublic){
-                MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(getUserNumber()).setValue(this);
-            }else if(!isRemoved()){
-                MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("userList").child(getUserNumber()).setValue(this);
-            }
-//                MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(MainActivity.user.getUserNumber()).child("lat").setValue(locLat);
-//                MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(MainActivity.user.getUserNumber()).child("lon").setValue(locLon);
+            if(!isRemoved()){
+                if(MainActivity.isPublic){
+                    MainActivity.myRef.child(GroupActivity.groupsReference)
+                            .child(FunHolder.getCurrentPublicGroup().getName())
+                            .child("userList")
+                            .child(getUserNumber())
+                            .setValue(this);
+                }else{
+                    MainActivity.myRef.child(GroupActivity.groupsReference)
+                            .child(FunHolder.getCurrentPrivateGroup()
+                            .getName())
+                            .child("userList")
+                            .child(getUserNumber())
+                            .setValue(this);
+                }
 
+            }
         }
     }
     public LatLng getLatLng(){

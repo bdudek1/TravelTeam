@@ -179,7 +179,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             groupsReference = "public_groups";
         }else{
             messageRef = database.getReference("private_groups/"+MainActivity.groupName+"/messages");
-            messageCounterRef = database.getReference("public_groups/"+MainActivity.groupName+"/messageCounter");
+            messageCounterRef = database.getReference("private_groups/"+MainActivity.groupName+"/messageCounter");
             userRef = database.getReference("private_groups/"+MainActivity.groupName+"/userList");
             groupsReference = "private_groups";
 
@@ -205,19 +205,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             checkLocation();
         }
 
-//        try{
-//            cipher = Cipher.getInstance("AES");
-//            keyGen = KeyGenerator.getInstance("AES");
-//            keyGen.init(128);  // Key size
-//            key = keyGen.generateKey();
-//        }catch(NoSuchAlgorithmException | NoSuchPaddingException e){
-//            System.out.println(e.getMessage());
-//        }
-//        try{
-//            cipher.init(Cipher.ENCRYPT_MODE, key);
-//        }catch(InvalidKeyException e){
-//            System.out.println(e.getMessage());
-//        }
 
     }
     public static class PlaceholderFragment extends Fragment {
@@ -384,12 +371,15 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         try{
                             if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
                                 if(!FunHolder.getCurrentPublicGroup().getUserList().values().contains(d.getValue(User.class)))
-                                FunHolder.getCurrentPublicGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
-                                System.out.println("IN DATACHANGE USER LIST" + FunHolder.getCurrentPublicGroup().getUserList());
+                                FunHolder.getCurrentPublicGroup()
+                                    .getUserList()
+                                    .put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
 
                             }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup()!=null){
                                 if(!FunHolder.getCurrentPrivateGroup().getUserList().values().contains(d.getValue(User.class)))
-                                FunHolder.getCurrentPrivateGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
+                                FunHolder.getCurrentPrivateGroup()
+                                    .getUserList()
+                                    .put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
                             }
 
                         }catch(Exception e){
@@ -413,7 +403,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("locLat").setValue(FunHolder.getCurrentPublicGroup().getLat());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("locLon").setValue(FunHolder.getCurrentPublicGroup().getLon());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("name").setValue(FunHolder.getCurrentPublicGroup().getName());
-                        //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("groupId").setValue(FunHolder.getCurrentPublicGroup().getGroupId());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("range").setValue(FunHolder.getCurrentPublicGroup().getRange());
                         MainActivity.publicGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPublicGroup().getLatLng()), new TreeSet<PublicGroup>());
                         MainActivity.publicGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPublicGroup().getLatLng())).add(FunHolder.getCurrentPublicGroup());
@@ -424,12 +413,10 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("locLat").setValue(FunHolder.getCurrentPrivateGroup().getLat());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("locLon").setValue(FunHolder.getCurrentPrivateGroup().getLon());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("name").setValue(FunHolder.getCurrentPrivateGroup().getName());
-                        //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("groupId").setValue(FunHolder.getCurrentPrivateGroup().getGroupId());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("range").setValue(FunHolder.getCurrentPrivateGroup().getRange());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("password").setValue(FunHolder.getCurrentPrivateGroup().getPasswordEncrypted());
                         MainActivity.privateGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPrivateGroup().getLatLng()), new TreeSet<PrivateGroup>());
                         MainActivity.privateGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPrivateGroup().getLatLng())).add(FunHolder.getCurrentPrivateGroup());
-                        //MainActivity.privateGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPrivateGroup().getLatLng()), FunHolder.getCurrentPrivateGroup());
                     }
 
 
@@ -542,10 +529,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     public void onBackPressed() {
 
         if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
-            //FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
             FunHolder.getCurrentPublicGroup().tryToDestroy();
         }else if(FunHolder.getCurrentPrivateGroup()!=null){
-            //FunHolder.getCurrentPrivateGroup().removeUser(MainActivity.user);
             FunHolder.getCurrentPrivateGroup().tryToDestroy();
         }
 
@@ -554,7 +539,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
         if(GroupActivity.messageRef!=null && GroupActivity.messagesListener!=null)
             GroupActivity.messageRef.removeEventListener(GroupActivity.messagesListener);
 
-        //MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child().removeValue();
         super.onBackPressed();
 
     }
@@ -603,7 +587,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         s = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng()) + "m";
                     }
                     if(u!=null){
-                        System.out.println("LAT LNG = " + u.getLatLng());
                         mMap.addMarker(new MarkerOptions()
                                 .position(u.getLatLng())
                                 .title(u.getName().equals(MainActivity.user.getName()) ? u.getName() + " (You)" : u.getName())
@@ -623,7 +606,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         s = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng()) + "m";
                     }
                     if(u!=null){
-                        System.out.println("LAT LNG = " + u.getLatLng());
                         mMap.addMarker(new MarkerOptions()
                                 .position(u.getLatLng())
                                 .title(u.getName().equals(MainActivity.user.getName()) ? u.getName() + " (You)" : u.getName())
@@ -643,8 +625,10 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
 
             return;
         }
@@ -690,8 +674,10 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                 .setInterval(UPDATE_INTERVAL)
                 .setFastestInterval(FASTEST_INTERVAL);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
@@ -794,7 +780,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
                     @Override
                     public void onPermissionGranted(PermissionGrantedResponse response) {
-                        //Toast.makeText(GroupActivity.this, "Single permission is granted!", Toast.LENGTH_SHORT).show();
                         isPermission = true;
                     }
 
@@ -823,6 +808,10 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
 
     @Override
     public void onDestroy(){
+        if(usersListener!=null && userRef!=null)
+            userRef.removeEventListener(usersListener);
+        if(messageRef!=null && messagesListener!=null)
+            messageRef.removeEventListener(messagesListener);
         if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
             FunHolder.getCurrentPublicGroup().removeUser(MainActivity.user);
             if(!FunHolder.getCurrentPublicGroup().tryToDestroy());

@@ -14,10 +14,8 @@ import java.util.TreeMap;
 @IgnoreExtraProperties
 public class PrivateGroup extends PublicGroup {
     private final static String key = "sgsgdgth8856h";
-    public static int privateGroupCounter = 0;
-    private int usersCounter;
     private String password;
-    private String groupId;
+
     public PrivateGroup(String name, String password) throws BlankPasswordException, BlankNameException{
         if(name.equals("")){
             throw new BlankNameException("Please enter the group name.");
@@ -26,11 +24,8 @@ public class PrivateGroup extends PublicGroup {
             throw new BlankPasswordException("Please fill the password field.");
         }
         this.setName(name);
-        //privateGroupCounter++;
-        //groupId = Integer.toString(privateGroupCounter);
         try{
             this.password = FunHolder.encrypt(password, key);
-            System.out.println("ENCRYPTED PASSWORD" + this.password);
         }catch(Exception e){
             this.password = password;
             System.out.println("ERROR ENCRYPTING PASSWORD" + e.getMessage());
@@ -58,6 +53,11 @@ public class PrivateGroup extends PublicGroup {
         }
 
     }
+    @Exclude
+    public void setPasswordUnencrypted(String password){
+        this.password = password;
+
+    }
     public String getPasswordEncrypted(){
         return password;
     }
@@ -74,9 +74,8 @@ public class PrivateGroup extends PublicGroup {
             }
         }
         if(isAdded){
-            user.setUserNumber(Integer.toString(getUserList().size()));
+            user.setUserNumber(Integer.toString(getUserList().size()+1));
             getUserList().put(user.getUserNumber(), user);
-            usersCounter++;
         }
         return isAdded;
     }
@@ -84,15 +83,17 @@ public class PrivateGroup extends PublicGroup {
     public boolean addUser(User user, String password) throws SameNameUserException, WrongPasswordException{
         boolean isAdded = true;
         try{
-            if(!FunHolder.decrypt(getPassword(), key, false).equals(password)){
+            if(!getPassword().equals(password)){
                 isAdded = false;
-                System.out.println("getPassword = " + FunHolder.decrypt(getPassword(),key,false));
-                System.out.println("password = "
-                        + password);
                 throw new WrongPasswordException("Wrong password.");
             }
         }catch(Exception e){
-            System.out.println(e.getStackTrace());
+            isAdded = false;
+            System.out.println(e.getClass());
+        }
+        if(getUserList().containsValue(user)){
+            isAdded = false;
+            throw new SameNameUserException("User with same name is present in the group, please change your name.");
         }
 
         for(User u:getUserList().values()){
@@ -102,9 +103,9 @@ public class PrivateGroup extends PublicGroup {
             }
         }
         if(isAdded){
-            usersCounter++;
-            user.setUserNumber(Integer.toString(getUserList().size()));
-            getUserList().put(user.getUserNumber(), user);
+            user.setUserNumber(Integer.toString(getUserList().size()+1));
+            user.setRemoved(false);
+            getUserList().putIfAbsent(user.getUserNumber(), user);
         }
         return isAdded;
     }
@@ -113,21 +114,6 @@ public class PrivateGroup extends PublicGroup {
         getUserList().clear();
         getMessages().clear();
         MainActivity.myRef.child("private_groups").child(getName()).removeValue();
-    }
-
-
-
-    @Override
-    public ArrayList<String> getUserNames(){
-        ArrayList<String> list = new ArrayList<String>();
-        for(User u : getUserList().values()){
-            list.add(u.getName());
-        }
-        return list;
-    }
-
-    public String getGroupId(){
-        return groupId;
     }
 
     @Override
@@ -157,10 +143,8 @@ public class PrivateGroup extends PublicGroup {
                 if(!userListBuf.containsValue(u) && !u.equals(user))
                     userListBuf.put(u.getUserNumber(), u);
             }
-            System.out.println("PRZED USTALENIEM USERLIST = " + userListBuf);
             MainActivity.myRef.child("private_groups").child(FunHolder.getCurrentPrivateGroup().getName()).child("userList").removeValue();
             MainActivity.myRef.child("private_groups").child(FunHolder.getCurrentPrivateGroup().getName()).child("userList").setValue(userListBuf);
         }
-        System.out.println("USER REMOVED");
     }
 }

@@ -2,20 +2,13 @@ package pl.travel.travelteam;
 
 import pl.travel.travelteam.group.Message;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @IgnoreExtraProperties
 public class PublicGroup implements Comparable<PublicGroup> {
@@ -37,8 +30,6 @@ public class PublicGroup implements Comparable<PublicGroup> {
         }
         this.name = name;
         messageCounter = 0;
-        //publicGroupCounter++;
-        //groupId = Integer.toString(publicGroupCounter);
     }
 
     PublicGroup(){
@@ -80,11 +71,9 @@ public class PublicGroup implements Comparable<PublicGroup> {
                 if(!userListBuf.containsValue(u) && !u.equals(user))
                     userListBuf.put(u.getUserNumber(), u);
             }
-            System.out.println("PRZED USTALENIEM USERLIST = " + userListBuf);
             MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").removeValue();
             MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userListBuf);
         }
-        System.out.println("USER REMOVED");
     }
 
     public boolean tryToDestroy(){
@@ -107,30 +96,9 @@ public class PublicGroup implements Comparable<PublicGroup> {
         userList.clear();
         messages.clear();
         messagesBuf.clear();
-
-//        Set<PublicGroup> gSet = MainActivity.publicGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPublicGroup().getLatLng()));
-//        if(gSet!=null)
-//        for(PublicGroup g:gSet){
-//            if(g.equals(this)){
-//                gSet.remove(g);
-//            }
-//        }
-
-        //MainActivity.myRef.child("public_groups").child(getName()).child("messageCounter").removeValue();
-        //MainActivity.myRef.child("public_groups").child(getName()).child("messages").removeValue();
         MainActivity.myRef.child("public_groups").child(getName()).removeValue();
-        //publicGroupCounter--;
     }
 
-    @Exclude
-    public ArrayList<String> getUserNames(){
-        ArrayList<String> list = new ArrayList<String>();
-        for(User u : userList.values()){
-            if(u!=null && u.getName() != null)
-            list.add(u.getName());
-        }
-        return list;
-    }
 
     @Exclude
     public ArrayList<String> getUserRepresentations(){
@@ -147,10 +115,6 @@ public class PublicGroup implements Comparable<PublicGroup> {
         this.userList = userList;
     }
 
-
-//    public String getGroupId(){
-//        return groupId;
-//    }
 
     public void addMessage(Message message){
         MainActivity.myRef.child("public_groups").child(getName()).child("messageCounter").setValue(messageCounter);

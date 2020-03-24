@@ -1,16 +1,7 @@
 package pl.travel.travelteam;
 
 import com.google.android.gms.maps.model.LatLng;
-
-import org.junit.Assert;
 import org.junit.Test;
-
-import pl.travel.travelteam.FunHolder;
-import pl.travel.travelteam.PrivateGroup;
-import pl.travel.travelteam.PublicGroup;
-import pl.travel.travelteam.SameNameUserException;
-import pl.travel.travelteam.User;
-import pl.travel.travelteam.WrongPasswordException;
 
 import static org.junit.Assert.*;
 
@@ -25,10 +16,11 @@ public class FunHolderTest {
 
     @Test
     public void groupJoiningTest(){
-        PrivateGroup g = new PrivateGroup("Group,", "abc");
+        PrivateGroup g = new PrivateGroup("Group", "abc");
+        System.out.println(g);
         try{
-            g.addUser(new User("User"), "cba");
-            Assert.fail();
+            assertFalse(g.addUser(new User("User"), "cba"));
+            assertTrue(g.addUser(new User("User2"), "abc"));
         }catch(WrongPasswordException e){
             e.getMessage();
         }
@@ -48,12 +40,11 @@ public class FunHolderTest {
         assertEquals(3, g.getUserList().size());
 
         PublicGroup pg = new PublicGroup("PublicGroup");
-        boolean bool = false;
         try{
-            assertTrue(pg.addUser(new User("User")));
-            assertFalse(pg.addUser(new User("User")));
+            pg.addUser(new User("User"));
+            pg.addUser(new User("User"));
         }catch(SameNameUserException e){
-
+            assertTrue(1 == 2);
         }
 
 
@@ -82,12 +73,12 @@ public class FunHolderTest {
         String s2 = "222......   33";
         String s3 = "           ";
         try{
-            assertTrue(FunHolder.decrypt(FunHolder.encrypt(s1, "key"), "key").equals(s1));
-            assertTrue(FunHolder.decrypt(FunHolder.encrypt(s2, "key"), "key").equals(s2));
-            assertTrue(FunHolder.decrypt(FunHolder.encrypt(s3, "key"), "key").equals(s3));
-            assertFalse(FunHolder.decrypt(FunHolder.encrypt(s1, "key"), "key").equals(s2));
-            assertFalse(FunHolder.decrypt(FunHolder.encrypt(s2, "key"), "key").equals(s3));
-            assertFalse(FunHolder.decrypt(FunHolder.encrypt(s1, "key"), "key").equals(s3));
+            assertTrue(FunHolder.decrypt(FunHolder.encrypt(s1, "key"), "key", false).equals(s1));
+            assertTrue(FunHolder.decrypt(FunHolder.encrypt(s2, "key"), "key", false).equals(s2));
+            assertTrue(FunHolder.decrypt(FunHolder.encrypt(s3, "key"), "key", false).equals(s3));
+            assertFalse(FunHolder.decrypt(FunHolder.encrypt(s1, "key"), "key", false).equals(s2));
+            assertFalse(FunHolder.decrypt(FunHolder.encrypt(s2, "key"), "key", false).equals(s3));
+            assertFalse(FunHolder.decrypt(FunHolder.encrypt(s1, "key"), "key", false).equals(s3));
         }catch(Exception e){
 
         }
