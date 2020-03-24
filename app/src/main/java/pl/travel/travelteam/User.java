@@ -38,8 +38,10 @@ public class User implements Comparable<User>{
             this.locLat = location.latitude;
             this.locLon = location.longitude;
             //
-            if(!isRemoved()){
+            if(!isRemoved() && MainActivity.isPublic){
                 MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(getUserNumber()).setValue(this);
+            }else if(!isRemoved()){
+                MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("userList").child(getUserNumber()).setValue(this);
             }
 //                MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(MainActivity.user.getUserNumber()).child("lat").setValue(locLat);
 //                MainActivity.myRef.child(GroupActivity.groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("userList").child(MainActivity.user.getUserNumber()).child("lon").setValue(locLon);
@@ -95,11 +97,16 @@ public class User implements Comparable<User>{
         if (o == null || !(o instanceof User)) {
             return false;
         }
-        if(((User)o)!=null && ((User) o).getName().equals(getName())){
-            return true;
-        }else{
+        try{
+            if(((User)o)!=null && ((User) o).getName().equals(getName())){
+                return true;
+            }else{
+                return false;
+            }
+        }catch(NullPointerException e){
             return false;
         }
+
     }
 
     @Override

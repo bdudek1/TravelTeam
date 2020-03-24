@@ -41,7 +41,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.Settings;
 import android.text.SpannableString;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,11 +61,14 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.single.PermissionListener;
 
 
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.TreeSet;
@@ -76,6 +78,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 
 import static pl.travel.travelteam.MainActivity.database;
 
@@ -124,8 +127,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
     static ValueEventListener usersListener;
     static ValueEventListener messagesListener;
 
-    private static Cipher cipher;
-    private static Key key;
     private static KeyGenerator keyGen;
 
     private static final String MAP_VIEW_BUNDLE_KEY = "xxxxxx";
@@ -204,20 +205,19 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             checkLocation();
         }
 
-        try{
-            cipher = Cipher.getInstance("AES");
-            keyGen = KeyGenerator.getInstance("AES");
-            keyGen.init(128);  // Key size
-            key = keyGen.generateKey();
-
-        }catch(NoSuchAlgorithmException | NoSuchPaddingException e){
-            System.out.println(e.getMessage());
-        }
-        try{
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-        }catch(InvalidKeyException e){
-            System.out.println(e.getMessage());
-        }
+//        try{
+//            cipher = Cipher.getInstance("AES");
+//            keyGen = KeyGenerator.getInstance("AES");
+//            keyGen.init(128);  // Key size
+//            key = keyGen.generateKey();
+//        }catch(NoSuchAlgorithmException | NoSuchPaddingException e){
+//            System.out.println(e.getMessage());
+//        }
+//        try{
+//            cipher.init(Cipher.ENCRYPT_MODE, key);
+//        }catch(InvalidKeyException e){
+//            System.out.println(e.getMessage());
+//        }
 
     }
     public static class PlaceholderFragment extends Fragment {
@@ -312,11 +312,10 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         }
 
                         try{
-
-                            messages.add(new Message(decodeMessage(d.getValue(Message.class).toString())));
-                            spannableMessages.add(new Message(decodeMessage((d.getValue(Message.class)).toString())).toSpannableString());
-                        }catch(InvalidKeyException | InvalidAlgorithmParameterException |
-                                BadPaddingException | IllegalBlockSizeException e){
+                            messages.add(new Message(FunHolder.decrypt(d.getValue(Message.class).toString(), "key", true)));
+                            spannableMessages.add(new Message(FunHolder.decrypt((d.getValue(Message.class))
+                                    .toString(), "key", true)).toSpannableString());
+                        }catch(Exception e){
                             System.out.println(e.getClass());
                             System.out.println(e.getMessage());
                             messages.add(d.getValue(Message.class));
@@ -388,7 +387,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                                 FunHolder.getCurrentPublicGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
                                 System.out.println("IN DATACHANGE USER LIST" + FunHolder.getCurrentPublicGroup().getUserList());
 
-                            }else if(FunHolder.getCurrentPrivateGroup()!=null){
+                            }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup()!=null){
                                 if(!FunHolder.getCurrentPrivateGroup().getUserList().values().contains(d.getValue(User.class)))
                                 FunHolder.getCurrentPrivateGroup().getUserList().put(d.getValue(User.class).getUserNumber(), d.getValue(User.class));
                             }
@@ -418,7 +417,7 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPublicGroup().getName()).child("range").setValue(FunHolder.getCurrentPublicGroup().getRange());
                         MainActivity.publicGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPublicGroup().getLatLng()), new TreeSet<PublicGroup>());
                         MainActivity.publicGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPublicGroup().getLatLng())).add(FunHolder.getCurrentPublicGroup());
-                    }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup()!=null & FunHolder.getCurrentPrivateGroup().getUserList().size()>0){
+                    }else if(!MainActivity.isPublic && FunHolder.getCurrentPrivateGroup()!=null && FunHolder.getCurrentPrivateGroup().getUserList().size()>0){
                         if(FunHolder.getCurrentPrivateGroup().getLat() == 0.0 || FunHolder.getCurrentPrivateGroup().getLon() == 0.0){
                             FunHolder.getCurrentPrivateGroup().setLatLng(new LatLng(MainActivity.user.getLat(), MainActivity.user.getLon()));
                         }
@@ -427,8 +426,10 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("name").setValue(FunHolder.getCurrentPrivateGroup().getName());
                         //MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("groupId").setValue(FunHolder.getCurrentPrivateGroup().getGroupId());
                         MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("range").setValue(FunHolder.getCurrentPrivateGroup().getRange());
-                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("password").setValue(FunHolder.getCurrentPrivateGroup().getPassword());
-                        MainActivity.privateGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPrivateGroup().getLatLng()), FunHolder.getCurrentPrivateGroup());
+                        MainActivity.myRef.child(groupsReference).child(FunHolder.getCurrentPrivateGroup().getName()).child("password").setValue(FunHolder.getCurrentPrivateGroup().getPasswordEncrypted());
+                        MainActivity.privateGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPrivateGroup().getLatLng()), new TreeSet<PrivateGroup>());
+                        MainActivity.privateGroupList.get(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPrivateGroup().getLatLng())).add(FunHolder.getCurrentPrivateGroup());
+                        //MainActivity.privateGroupList.putIfAbsent(FunHolder.getDistance(MainActivity.user.getLatLng(), FunHolder.getCurrentPrivateGroup().getLatLng()), FunHolder.getCurrentPrivateGroup());
                     }
 
 
@@ -473,11 +474,9 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     }else{
                         if(MainActivity.isPublic && FunHolder.getCurrentPublicGroup()!=null){
                             try{
-//                                FunHolder.getCurrentPublicGroup().addMessage(new Message(MainActivity.user ,
-//                                        cipher.doFinal(messageEtext.getText().toString().getBytes()).toString()));
                                 FunHolder.getCurrentPublicGroup().addMessage(new Message(MainActivity.user ,
-                                        codeMessage(messageEtext.getText().toString())));
-                            }catch(BadPaddingException | IllegalBlockSizeException | InvalidKeyException e){
+                                        FunHolder.encrypt(messageEtext.getText().toString(), "key")));
+                            }catch(Exception e){
                                 FunHolder.getCurrentPublicGroup().addMessage(new Message(MainActivity.user ,
                                        messageEtext.getText().toString()));
                                 System.out.println(e.getMessage());
@@ -486,8 +485,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                         }else if(FunHolder.getCurrentPrivateGroup()!=null){
                             try{
                                 FunHolder.getCurrentPrivateGroup().addMessage(new Message(MainActivity.user ,
-                                        cipher.doFinal(messageEtext.getText().toString().getBytes()).toString()));
-                            }catch(BadPaddingException | IllegalBlockSizeException e){
+                                        FunHolder.encrypt(messageEtext.getText().toString(), "key")));
+                            }catch(Exception e){
                                 FunHolder.getCurrentPrivateGroup().addMessage(new Message(MainActivity.user ,
                                         messageEtext.getText().toString()));
                                 System.out.println(e.getMessage());
@@ -623,22 +622,15 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                     }else{
                         s = "Distance: " + FunHolder.getDistance(MainActivity.user.getLatLng(), u.getLatLng()) + "m";
                     }
-                    if(u!=null && u.getName().equals(MainActivity.user.getName()) && FunHolder.getDistance(u.getLatLng(), MainActivity.user.getLatLng()) == 0){
+                    if(u!=null){
+                        System.out.println("LAT LNG = " + u.getLatLng());
                         mMap.addMarker(new MarkerOptions()
                                 .position(u.getLatLng())
                                 .title(u.getName().equals(MainActivity.user.getName()) ? u.getName() + " (You)" : u.getName())
                                 .snippet(s)
-                                .icon(u.getName().equals(MainActivity.user.getName())
-                                        ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-                                        :BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-                    }else if(u!=null && !u.getName().equals(MainActivity.user.getName())){
-                        mMap.addMarker(new MarkerOptions()
-                                .position(u.getLatLng())
-                                .title(u.getName().equals(MainActivity.user.getName()) ? u.getName() + " (You)" : u.getName())
-                                .snippet(s)
-                                .icon(u.getName().equals(MainActivity.user.getName())
-                                        ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-                                        :BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                                .icon(u.getName().equals(MainActivity.user.getName()) ?
+                                        BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED):
+                                        BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
                     }
 
                 }
@@ -843,34 +835,6 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
             FunHolder.setCurrentPrivateGroup(null);
         }
         super.onDestroy();
-    }
-
-    public static String decodeMessage(String msg) throws InvalidAlgorithmParameterException,
-            InvalidKeyException, BadPaddingException, IllegalBlockSizeException{
-        System.out.println("BEFORE CIPHER INIT = ");
-
-        cipher.init(Cipher.DECRYPT_MODE,key, cipher.getParameters());
-        System.out.println("1");
-        String msgBeforeUser = msg
-                .substring(0, msg
-                        .toString().indexOf(' '));
-        System.out.println("2");
-        String msgAfterUser = new String (cipher.doFinal(Base64.decode((msg
-                .substring(msg.indexOf(' ')+1)).getBytes(), Base64.DEFAULT)));
-//                            String msgAfterUser = cipher.doFinal((d.getValue(Message.class).toString()
-//                                    .substring(d.getValue(Message.class)
-//                                            .toString().indexOf(' '))).getBytes()).toString();
-        System.out.println("3");
-        msgAfterUser=new String(Base64.decode(msgAfterUser,Base64.NO_PADDING));
-        System.out.println("msgBeforeUser = " + msgBeforeUser);
-        System.out.println("msgAfterUser = " + msgAfterUser);
-        return msgBeforeUser + msgAfterUser;
-    }
-
-    public static String codeMessage(String msg) throws InvalidKeyException, BadPaddingException,
-            IllegalBlockSizeException{
-        cipher.init(Cipher.ENCRYPT_MODE, key);
-        return cipher.doFinal(msg.getBytes()).toString();
     }
 
 }

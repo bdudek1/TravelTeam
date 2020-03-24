@@ -1,6 +1,7 @@
 package pl.travel.travelteam;
 
 import android.location.Location;
+import android.util.Base64;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,9 @@ import android.widget.FrameLayout;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,10 +25,17 @@ import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
+import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.spec.SecretKeySpec;
+
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 public class FunHolder {
-    public static void initInfo(){
+    public static void initInfo() {
         MainActivity.userName.setText(MainActivity.user.getName());
         MainActivity.userName.invalidate();
         MainActivity.informacje.setVisibility(View.VISIBLE);
@@ -37,7 +48,8 @@ public class FunHolder {
         MainActivity.userName.setVisibility(View.VISIBLE);
         MainActivity.changeNickButton.setVisibility(View.VISIBLE);
     }
-    public static void initGroups(){
+
+    public static void initGroups() {
         MainActivity.informacje.setVisibility(View.INVISIBLE);
         MainActivity.informationButton.setVisibility(View.INVISIBLE);
         MainActivity.findTeamButton.setVisibility(View.VISIBLE);
@@ -67,7 +79,7 @@ public class FunHolder {
         }
     }
 
-    public static void initChat(){
+    public static void initChat() {
         GroupActivity.sendButton.setVisibility(View.VISIBLE);
         GroupActivity.chatView.setVisibility(View.VISIBLE);
         GroupActivity.messageEtext.setVisibility(View.VISIBLE);
@@ -76,7 +88,7 @@ public class FunHolder {
         GroupActivity.mapFragment.getView().setVisibility(View.GONE);
     }
 
-    public static void initUsersList(){
+    public static void initUsersList() {
         GroupActivity.sendButton.setVisibility(View.INVISIBLE);
         GroupActivity.chatView.setVisibility(View.INVISIBLE);
         GroupActivity.messageEtext.setVisibility(View.INVISIBLE);
@@ -85,7 +97,7 @@ public class FunHolder {
         GroupActivity.mapFragment.getView().setVisibility(View.GONE);
     }
 
-    public static void initMap(){
+    public static void initMap() {
         GroupActivity.sendButton.setVisibility(View.INVISIBLE);
         GroupActivity.chatView.setVisibility(View.INVISIBLE);
         GroupActivity.messageEtext.setVisibility(View.INVISIBLE);
@@ -93,60 +105,83 @@ public class FunHolder {
         GroupActivity.mapFragment.getView().setVisibility(View.VISIBLE);
     }
 
-    public static PublicGroup getCurrentPublicGroup(){
+    public static PublicGroup getCurrentPublicGroup() {
         return MainActivity.currentPublicGroup;
     }
 
-    public static void setCurrentPublicGroup(PublicGroup g){
+    public static void setCurrentPublicGroup(PublicGroup g) {
         MainActivity.currentPublicGroup = g;
     }
 
-    public static PrivateGroup getCurrentPrivateGroup(){
+    public static PrivateGroup getCurrentPrivateGroup() {
         return MainActivity.currentPrivateGroup;
     }
 
-    public static void setCurrentPrivateGroup(PrivateGroup g){
+    public static void setCurrentPrivateGroup(PrivateGroup g) {
         MainActivity.currentPrivateGroup = g;
     }
 
-    public static List<String> getPublicGroupNames(){
+    public static List<String> getGroupNames() {
         List<String> buf = new ArrayList<>();
-        try{
+        try {
             buf = MainActivity.futureNames.get();
             MainActivity.executorService.shutdown();
             return buf;
-        }catch(ExecutionException | InterruptedException | NullPointerException e){
+        } catch (ExecutionException | InterruptedException | NullPointerException e) {
             System.out.println(e.getMessage());
             return buf;
         }
     }
 
-    public static List<String> getPrivateGroupNames(){
-        List<String> names = new ArrayList<>();
-        for(PrivateGroup g: MainActivity.privateGroupList.values()){
-            if(g.getName()!= "" && g.getName() != null){
-                if(MainActivity.range == 0){
-                    names.add(g.toStringRepresentation());
-                }else{
-                    if(MainActivity.range > getDistance(MainActivity.user.getLatLng(), new LatLng(g.getLat(), g.getLon()))){
-                        names.add(g.toStringRepresentation());
-                    };
-                }
-            }
+//    public static List<String> getPrivateGroupNames() {
+//        List<String> names = new ArrayList<>();
+//        for (PrivateGroup g : MainActivity.privateGroupList.values()) {
+//            if (g.getName() != "" && g.getName() != null) {
+//                if (MainActivity.range == 0) {
+//                    names.add(g.toStringRepresentation());
+//                } else {
+//                    if (MainActivity.range > getDistance(MainActivity.user.getLatLng(), new LatLng(g.getLat(), g.getLon()))) {
+//                        names.add(g.toStringRepresentation());
+//                    }
+//                    ;
+//                }
+//            }
+//
+//
+//        }
+//        return names;
+//    }
 
-
-        }
-        return names;
-    }
-
-    public static int getDistance(LatLng loc1, LatLng loc2){
+    public static int getDistance(LatLng loc1, LatLng loc2) {
         Location l1 = new Location("buf");
         Location l2 = new Location("buf");
         l1.setLatitude(loc1.latitude);
         l1.setLongitude(loc1.longitude);
         l2.setLatitude(loc2.latitude);
         l2.setLongitude(loc2.longitude);
-        return (int)l1.distanceTo(l2);
+        return (int) l1.distanceTo(l2);
     }
 
+    public static String encrypt(String strClearText, String key) throws Exception {
+        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+        encryptor.setPassword(key);
+        String encrypted = encryptor.encrypt(strClearText);
+        return encrypted;
+    }
+
+    public static String decrypt(String strEncrypted, String key, boolean isMessage) throws Exception {
+        if(isMessage){
+            StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+            encryptor.setPassword(key);
+            String user = strEncrypted.substring(0, strEncrypted.indexOf(' ') + 1);
+            strEncrypted = strEncrypted.substring(strEncrypted.indexOf(' '));
+            String decrypted = encryptor.decrypt(strEncrypted);
+            return user + decrypted;
+        }else{
+            StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+            encryptor.setPassword(key);
+            String password = encryptor.decrypt(strEncrypted);
+            return password;
+        }
+    }
 }

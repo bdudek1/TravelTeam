@@ -48,29 +48,21 @@ public class PublicGroup implements Comparable<PublicGroup> {
     public boolean addUser(User user) throws SameNameUserException{
         boolean isAdded = true;
         if(user != null){
-            if(userList.containsValue(user)){
+            if(getUserList().containsValue(user)){
                 isAdded = false;
                 throw new SameNameUserException("User with same name is present in the group, please change your name.");
             }
-            for(User u:userList.values()){
-                if(u != null && u.getName()!=null && u.getName().equals(user.getName()) && !userList.isEmpty()){
+            for(User u:getUserList().values()){
+                if(u != null && u.getName()!=null && u.getName().equals(user.getName())){
                     isAdded = false;
                     throw new SameNameUserException("User with same name is present in the group, please change your name.");
                 }
             }
             if(isAdded && FunHolder.getCurrentPublicGroup()!=null){
-                System.out.println("USER LIST SIZE IN PG CODE = " + userList.size());
-                user.setUserNumber(Integer.toString(userList.size()+1));
+                System.out.println("USER LIST SIZE IN PG CODE = " + getUserList().size());
+                user.setUserNumber(Integer.toString(getUserList().size()+1));
                 user.setRemoved(false);
-                userList.putIfAbsent(user.getUserNumber(), user);
-//                if(userSizeBuf != userList.size()){
-                //MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").removeValue();
-                //MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userList);
-//                    System.out.println("USER SIZE BUF = " + userSizeBuf);
-//                    System.out.println("USER LIST SIZE =  " + userList.size());
-//                    userSizeBuf = (short)(userList.size()+1);
-//                }
-
+                getUserList().putIfAbsent(user.getUserNumber(), user);
             }
         }else{
             isAdded = false;
@@ -85,24 +77,9 @@ public class PublicGroup implements Comparable<PublicGroup> {
             if(userList.remove(user.getUserNumber(), user))
                 user.setRemoved(true);
             for(User u:userList.values()){
-//                if(Integer.valueOf(user.getUserNumber()) <= Integer.valueOf(u.getUserNumber()) && !u.equals(user)){
-//                    //u.setUserNumber(Integer.toString(Integer.valueOf(u.getUserNumber()) - 1));
-//                    if(!userListBuf.containsValue(u) && !u.equals(user))
-//                    userListBuf.put(u.getUserNumber(), u);
-//                }else if(!u.equals(user)){
-//                    if(!userListBuf.containsValue(u))
-//                    userListBuf.put(u.getUserNumber(), u);
-//                }
                 if(!userListBuf.containsValue(u) && !u.equals(user))
                     userListBuf.put(u.getUserNumber(), u);
             }
-//            System.out.println("//////////////////////////////////////");
-//            for(User u: userListBuf.values()){
-//                System.out.println(u);
-//                System.out.println(u.getLatLng());
-//            }
-//            System.out.println("//////////////////////////////////////");
-            //TU JEST DOBRZE
             System.out.println("PRZED USTALENIEM USERLIST = " + userListBuf);
             MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").removeValue();
             MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userListBuf);

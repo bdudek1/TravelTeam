@@ -34,12 +34,12 @@ public class FunHolderTest {
         }
 
         try{
-            g.addUser(new User("User"), "abc");
-            g.addUser(new User("User"), "abc");
-            Assert.fail();
-        }catch(SameNameUserException e){
-            e.getMessage();
+            assertTrue(g.addUser(new User("User"), "abc"));
+            assertFalse(g.addUser(new User("User"), "abc"));
+        }catch(SameNameUserException | WrongPasswordException e){
+
         }
+
 
         g.getUserList().clear();
         g.addUser(new User("aad"), "abc");
@@ -48,14 +48,15 @@ public class FunHolderTest {
         assertEquals(3, g.getUserList().size());
 
         PublicGroup pg = new PublicGroup("PublicGroup");
-
+        boolean bool = false;
         try{
-            pg.addUser(new User("User"));
-            pg.addUser(new User("User"));
-            Assert.fail();
+            assertTrue(pg.addUser(new User("User")));
+            assertFalse(pg.addUser(new User("User")));
         }catch(SameNameUserException e){
-            e.getMessage();
+
         }
+
+
 
         pg.getUserList().clear();
         pg.addUser(new User("aad"));
@@ -75,33 +76,22 @@ public class FunHolderTest {
         assertFalse(u2.equals(u3));
     }
 
-//    @Test
-//    public void removeDuplicatesTest(){
-//        ArrayList<User> userList = new ArrayList<>();
-//        User u1 = new User("user1");
-//        u1.locLat = 50.0;
-//        u1.locLon = 50.0;
-//        User u2 = new User("user1");
-//        u1.locLat = 55.0;
-//        u1.locLon = 55.0;
-//        User u3 = new User("user3");
-//        u1.locLat = 60.0;
-//        u1.locLon = 60.0;
-//
-//        userList.add(u1);
-//        userList.add(u2);
-//        userList.add(u3);
-//
-//        userList = FunHolder.removeDuplicates(userList);
-//        assertEquals(2, userList.size());
-//        u2.setName("user2");
-//
-//        userList.clear();
-//
-//        userList.add(u1);
-//        userList.add(u2);
-//        userList.add(u3);
-//
-//        assertEquals(3, userList.size());
-//    }
+    @Test
+    public void encryptionTest(){
+        String s1 = "2323gegrg";
+        String s2 = "222......   33";
+        String s3 = "           ";
+        try{
+            assertTrue(FunHolder.decrypt(FunHolder.encrypt(s1, "key"), "key").equals(s1));
+            assertTrue(FunHolder.decrypt(FunHolder.encrypt(s2, "key"), "key").equals(s2));
+            assertTrue(FunHolder.decrypt(FunHolder.encrypt(s3, "key"), "key").equals(s3));
+            assertFalse(FunHolder.decrypt(FunHolder.encrypt(s1, "key"), "key").equals(s2));
+            assertFalse(FunHolder.decrypt(FunHolder.encrypt(s2, "key"), "key").equals(s3));
+            assertFalse(FunHolder.decrypt(FunHolder.encrypt(s1, "key"), "key").equals(s3));
+        }catch(Exception e){
+
+        }
+
+    }
+
 }
