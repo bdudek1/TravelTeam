@@ -773,7 +773,8 @@ public class GroupActivity extends AppCompatActivity implements RecyclerViewAdap
                 .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                 .withListener(new PermissionListener() {
                     @Override
-                    public void onPermissionRationaleShouldBeShown(com.karumi.dexter.listener.PermissionRequest permission,
+                    public void onPermissionRationaleShouldBeShown(com.karumi.dexter.listener
+                                                                           .PermissionRequest permission,
                                                                    PermissionToken token) {
                         token.continuePermissionRequest();
                     }

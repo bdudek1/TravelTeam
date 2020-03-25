@@ -67,15 +67,17 @@ public class PrivateGroup extends PublicGroup {
     @Override
     public boolean addUser(User user) throws SameNameUserException{
         boolean isAdded = true;
-        for(User u:getUserList().values()){
-            if(u != null && u.getName()!=null && u.getName().equals(user.getName()) && !getUserList().isEmpty()){
-                isAdded = false;
-                throw new SameNameUserException("User with same name is present in the group, please change your name.");
-            }
+        if(getUserList().containsValue(user)){
+            isAdded = false;
+            throw new SameNameUserException("User with same name is present in the group, please change your name.");
         }
         if(isAdded){
-            user.setUserNumber(Integer.toString(getUserList().size()+1));
-            getUserList().put(user.getUserNumber(), user);
+            user.setUserNumber(Integer.toString(getUserList().size()));
+            user.setRemoved(false);
+            while(getUserList().containsKey(user.getUserNumber())){
+                user.setUserNumber(Integer.toString(Integer.valueOf(user.getUserNumber())+1));
+            }
+            getUserList().putIfAbsent(user.getUserNumber(), user);
         }
         return isAdded;
     }
@@ -95,16 +97,12 @@ public class PrivateGroup extends PublicGroup {
             isAdded = false;
             throw new SameNameUserException("User with same name is present in the group, please change your name.");
         }
-
-        for(User u:getUserList().values()){
-            if(u != null && u.getName()!=null && u.getName().equals(user.getName()) && !getUserList().isEmpty()){
-                isAdded = false;
-                throw new SameNameUserException("User with same name is present in the group, please change your name.");
-            }
-        }
         if(isAdded){
-            user.setUserNumber(Integer.toString(getUserList().size()+1));
+            user.setUserNumber(Integer.toString(getUserList().size()));
             user.setRemoved(false);
+            while(getUserList().containsKey(user.getUserNumber())){
+                user.setUserNumber(Integer.toString(Integer.valueOf(user.getUserNumber())+1));
+            }
             getUserList().putIfAbsent(user.getUserNumber(), user);
         }
         return isAdded;

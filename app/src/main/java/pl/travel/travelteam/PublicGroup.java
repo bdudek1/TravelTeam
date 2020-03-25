@@ -43,16 +43,12 @@ public class PublicGroup implements Comparable<PublicGroup> {
                 isAdded = false;
                 throw new SameNameUserException("User with same name is present in the group, please change your name.");
             }
-            for(User u:getUserList().values()){
-                if(u != null && u.getName()!=null && u.getName().equals(user.getName())){
-                    isAdded = false;
-                    throw new SameNameUserException("User with same name is present in the group, please change your name.");
-                }
-            }
             if(isAdded && FunHolder.getCurrentPublicGroup()!=null){
-                System.out.println("USER LIST SIZE IN PG CODE = " + getUserList().size());
-                user.setUserNumber(Integer.toString(getUserList().size()+1));
+                user.setUserNumber(Integer.toString(getUserList().size()));
                 user.setRemoved(false);
+                while(getUserList().containsKey(user.getUserNumber())){
+                    user.setUserNumber(Integer.toString(Integer.valueOf(user.getUserNumber())+1));
+                }
                 getUserList().putIfAbsent(user.getUserNumber(), user);
             }
         }else{
@@ -71,8 +67,18 @@ public class PublicGroup implements Comparable<PublicGroup> {
                 if(!userListBuf.containsValue(u) && !u.equals(user))
                     userListBuf.put(u.getUserNumber(), u);
             }
-            MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").removeValue();
-            MainActivity.myRef.child("public_groups").child(FunHolder.getCurrentPublicGroup().getName()).child("userList").setValue(userListBuf);
+            MainActivity.myRef.child("public_groups")
+                    .child(FunHolder
+                            .getCurrentPublicGroup()
+                            .getName())
+                    .child("userList")
+                    .removeValue();
+            MainActivity.myRef.child("public_groups")
+                    .child(FunHolder
+                            .getCurrentPublicGroup()
+                            .getName())
+                    .child("userList")
+                    .setValue(userListBuf);
         }
     }
 
@@ -213,7 +219,8 @@ public class PublicGroup implements Comparable<PublicGroup> {
     public int compareTo(PublicGroup g){
         int distance = 0;
         if(g!=null && g.getRange()!=null){
-            distance = FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()) - g.getRange().intValue() - FunHolder.getDistance(MainActivity.user.getLatLng(), this.getLatLng());
+            distance = FunHolder.getDistance(MainActivity.user.getLatLng(), g.getLatLng()) - g.getRange().intValue()
+                    - FunHolder.getDistance(MainActivity.user.getLatLng(), this.getLatLng());
         }else{
             return 1;
         }
