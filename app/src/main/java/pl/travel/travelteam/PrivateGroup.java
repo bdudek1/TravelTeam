@@ -72,7 +72,7 @@ public class PrivateGroup extends PublicGroup {
             throw new SameNameUserException("User with same name is present in the group, please change your name.");
         }
         if(isAdded){
-            user.setUserNumber(Integer.toString(getUserList().size()));
+            user.setUserNumber(Integer.toString(0));
             user.setRemoved(false);
             while(getUserList().containsKey(user.getUserNumber())){
                 user.setUserNumber(Integer.toString(Integer.valueOf(user.getUserNumber())+1));
@@ -98,7 +98,7 @@ public class PrivateGroup extends PublicGroup {
             throw new SameNameUserException("User with same name is present in the group, please change your name.");
         }
         if(isAdded){
-            user.setUserNumber(Integer.toString(getUserList().size()));
+            user.setUserNumber(Integer.toString(0));
             user.setRemoved(false);
             while(getUserList().containsKey(user.getUserNumber())){
                 user.setUserNumber(Integer.toString(Integer.valueOf(user.getUserNumber())+1));
